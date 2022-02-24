@@ -27,6 +27,7 @@ Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
 Install all the requirements
 <pre><code>pip install -r requirements.txt
 </code></pre>
+Fill in the config.json file and message.json file<br/>
 And run the main.py file
 <pre><code>python main.py
 </code></pre>
