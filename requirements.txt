@@ -1,0 +1,5 @@
+httpx
+colorama
+pyfiglet
+websocket-client
+discum

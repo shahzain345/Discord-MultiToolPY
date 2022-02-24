@@ -1,0 +1,9 @@
+{
+    "removeDeadTokens": true,
+    "captcha_api": "anti-captcha.com or capmonster.cloud (2captcha.com is not supported)",
+    "captcha_key": "",
+    "useDelays": true,
+    "save_failed_logs": false,
+    "bypass_membership_screening": false,
+    "prefered_threads": 1000
+}
