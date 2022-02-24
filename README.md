@@ -23,5 +23,5 @@
 Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
 ## How to use?
 Install all the requirements
-<pre><code>pip install requirements.txt
+<pre><code>pip install -r requirements.txt
 </code></pre>
