@@ -27,3 +27,7 @@ Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
 Install all the requirements
 <pre><code>pip install -r requirements.txt
 </code></pre>
+## Note:
+Shahzain345 will not be responsible for any damage caused by this script.<br/>
+If you see anyone selling this tool report it to me asap!
+## Thank You!
