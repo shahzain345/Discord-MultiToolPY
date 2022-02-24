@@ -143,10 +143,10 @@ def menu():
         pool = Pool(pool_size)
         for token in tokens:
             pool.apply_async(checkToken, (token, ))
-        open('input/tokens.txt', 'w').write("")
         pool.close()
         pool.join()
         if config["removeDeadTokens"] == True:
+            open('input/tokens.txt', 'w').write("")
             with open("input/tokens.txt", "a") as fp:
                 for token in goodtokens:
                     fp.write(token + "\n")
@@ -161,10 +161,10 @@ def menu():
             return menu()
         else:
             print(f"{Fore.GREEN}{Style.BRIGHT}Valid Invite: {rawInvite}{Style.RESET_ALL}")
-        delay = input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}") if config["useDelays"] == True else 0
+        delay = int(input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}")) if config["useDelays"] == True else 0
         pool = Pool(1000)
         for token in tokens:
-            pool.apply_async(joinServer, (token, rawInvite, delay))
+            pool.apply_async(joinServer, (token, rawInvite, delay)) if config["useDelays"] == False else pool.apply(joinServer, (token, rawInvite, delay))
         pool.close()
         pool.join()
         return menu()
@@ -204,7 +204,7 @@ def menu():
         for userId in filteredMembers:
             if userId in sentUsers or userId in blacklistedUsers: continue
             variableReplacedMsg = str(messageObj["message"]).replace("<@user>", f"<@{userId}>")
-            pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
+            pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
         return menu()
     if choice == 12:
         print(f"{Fore.GREEN}{Style.BRIGHT}Spamming server{Style.RESET_ALL}")
