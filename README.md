@@ -1,8 +1,10 @@
 # Discord MultiTool-PY
 ## By Shahzain
 <li>This project was inspired by DMDGO by Vanshaj https://github.com/V4NSH4J/discord-mass-DM-GO</li>
+
 # About
 <strong>Discord Multi Tool-PY</strong> is a multi-threaded Discord Self Bot and it is used for many features such as the token joiner and MassDM
+
 # Features
 <li>Proxyless/HTTP Proxy Support</li>
 <li>Token Joiner</li>
