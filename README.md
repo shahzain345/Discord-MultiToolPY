@@ -20,6 +20,8 @@
 <li>Easy to use and setup</li>
 <li>Server spammer(Has MassMention)</li>
 <li>Token Checker</li>
+<li>This can send multiple messages and this can ping the user aswell which is pretty cool if you ask me</li>
+<li>Auto Update, This will automatically install all the newest updates so you dont have to download them manually 😃</li>
 
 ## Config
 | Name                                      | Type | Description                                                                                                                            |
@@ -33,6 +35,7 @@
 | <code>bypass_reaction_verification</code> | bool | Set this to true if your target server has a reaction verification.                                                                    |
 | <code>proxyless</code>                    | bool | If you want to use the tool without proxies.                                                                                           |
 | <code>proxyProtocol</code>                | str  | Your proxy protocol, by default its http                                                                                               |
+| <code>sendMultitpleMessages</code>        | bool | Set this to true if you want to send multiple messages to the target user                                                              |
 
 ## Example Configuration
 ```json
@@ -45,7 +48,8 @@
     "bypass_membership_screening": true,
     "bypass_reaction_verification": false,
     "proxyless": false,
-    "proxyProtocol": "http"
+    "proxyProtocol": "http",
+    "sendMultitpleMessages": false
 }
 ```
 ## Need Help?

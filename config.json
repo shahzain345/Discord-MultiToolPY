@@ -7,5 +7,6 @@
     "bypass_membership_screening": true,
     "bypass_reaction_verification": false,
     "proxyless": false,
-    "proxyProtocol": "http"
+    "proxyProtocol": "http",
+    "sendMultitpleMessages": false
 }

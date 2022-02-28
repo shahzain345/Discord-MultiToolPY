@@ -12,7 +12,7 @@ from massdm import MassDM
 from multiprocessing.pool import ThreadPool as Pool
 from globalvariables import sockStatus, qurantinedTokens, sentUsers, blacklistedUsers, unqurantineToken
 from utils import scrapeMembers, showMenu, scrapeMassMention, getInviteInfo, getGoodToken
-
+from update import lookforupdates
 
 def clearConsole(): return os.system(
     'cls' if os.name in ('nt', 'dos') else 'clear')
@@ -43,7 +43,7 @@ if len(open("input/proxies.txt").read().splitlines()) == 0 and config["proxyless
         f"{Fore.RED}{Style.BRIGHT}[?] Input some proxies before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
     exit()
-
+lookforupdates()
 
 def setTitle(): return os.system(
     f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
@@ -248,8 +248,15 @@ def menu():
         for userId in filteredMembers:
             if userId in sentUsers or userId in blacklistedUsers:
                 continue
-            variableReplacedMsg = str(messageObj["message"]).replace(
-                "<@user>", f"<@{userId}>")
+            if config["sendMultitpleMessages"] == True:
+                good_token = getGoodToken()
+                for msg in messageObj:
+                    variableReplacedMsg = str(msg["message"]).replace(
+                        "<@user>", f"<@{userId}>")
+                    pool.apply_async(sendDM, (good_token, variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(
+                        sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
+            variableReplacedMsg = str(messageObj[0]["message"]).replace(
+                        "<@user>", f"<@{userId}>")
             pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(
                 sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
         return menu()

@@ -69,7 +69,9 @@ class MassDM:
                 solvedCaptcha = captchaData.get(
                     "solution").get("gRecaptchaResponse")
                 return solvedCaptcha
-
+    def sendFriendRequest(self, username, discrim) -> httpx.Response:
+        """Sends a friend request to the given user returns httpx.Response, will add this soon cuz i am tired 😃"""
+        return None
     def sendDM(self, message, userId) -> httpx.Response:
         """Sends a dm to the given userId"""
         try:
