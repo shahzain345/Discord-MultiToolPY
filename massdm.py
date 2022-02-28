@@ -2,15 +2,15 @@ import httpx
 import time
 from colorama import Fore, Style
 from globalvariables import getQurantinedToken, qurantineToken, sentUsers, sockStatus
+from urllib.parse import urlencode
 import random
 import string
 import json as theJson
 import websocket
-import ssl
-import certifi
 # Main MassDm class
+
+config = theJson.load(open("config.json"))
 def savelogs(logType, message):
-    config = theJson.load(open("config.json"))
     if config["save_failed_logs"] == False:
         return None
     if logType == "invite":
@@ -21,11 +21,13 @@ def savelogs(logType, message):
         open("logs/spammerlogs.txt", 'a').write(message + "\n")
     return True
 
+
 class MassDM:
     def __init__(self, token):
         proxies = open("input/proxies.txt").read().splitlines()
         self.client = httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
-                                                                         "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="}, proxies=f"http://{random.choice(proxies)}")
+                                                                         "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="}, proxies=f"{config['proxyProtocol']}://{random.choice(proxies)}") if config["proxyless"] == False else httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
+                                                                         "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="})
         superproperties = self.client.headers["X-Track"]
         self.client.headers["X-Fingerprint"] = self.client.get(
             "https://discord.com/api/v9/experiments", timeout=30).json()["fingerprint"]
@@ -80,15 +82,17 @@ class MassDM:
             if req.status_code != 200:
                 print(
                     f'{Style.BRIGHT}{Fore.RED}[>] Failed to send message to {userId}{Style.RESET_ALL}')
-                savelogs("dms", f"{self.client.headers['Authorization']} failed to send dm to {userId}")
+                savelogs(
+                    "dms", f"{self.client.headers['Authorization']} failed to send dm to {userId}")
                 return req
             else:
                 print(
                     f'{Style.BRIGHT}{Fore.GREEN}[>] Sent message, messageId: {req.json()["id"]}{Style.RESET_ALL}')
                 sentUsers.append(userId)
                 return req
-        except: 
-            print(f"{Fore.RED}{Style.BRIGHT}A httpx exception was raised{Style.RESET_ALL}")
+        except:
+            print(
+                f"{Fore.RED}{Style.BRIGHT}A httpx exception was raised{Style.RESET_ALL}")
 
     def checkToken(self):
         """Checks the token to see if its valid or invalid returns a str "Valid" | "Invalid" """
@@ -110,12 +114,13 @@ class MassDM:
         if req.status_code == 200:
             print(
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
-            return "Joined"
+            return "Joined", req.json()
         else:
             print(
                 f"{Fore.RED}{self.client.headers['Authorization']} failed to join server! {Style.RESET_ALL}")
-            savelogs("invite", f"{self.client.headers['Authorization']} failed to join {rawInvite}")
-            return "NotJoined"
+            savelogs(
+                "invite", f"{self.client.headers['Authorization']} failed to join {rawInvite}")
+            return "NotJoined", req.json()
 
     def changeUsername(self, newUsername, password):
         """Changes the username of self.token, returns nothing"""
@@ -172,7 +177,8 @@ class MassDM:
         if req.status_code != 200:
             print(
                 f'{Style.BRIGHT}{Fore.RED}[>] Failed to send message in {channelId}{Style.RESET_ALL}')
-            savelogs("spam", f"{self.client.headers['Authorization']} failed to send message in {channelId}")
+            savelogs(
+                "spam", f"{self.client.headers['Authorization']} failed to send message in {channelId}")
             return req.json()
         else:
             print(
@@ -192,26 +198,77 @@ class MassDM:
         if not guildId:
             return None
         return guildId
+
     def getGuild(self, guildId):
         """Returns guild object: https://discord.com/developers/docs/resources/guild#guild-object"""
         req = self.client.get(f"https://discord.com/api/v9//guilds/{guildId}")
         if "name" not in req.json():
-            print(f"{Fore.RED}{Style.BRIGHT}Invalid JSON returned from discord{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}{Style.BRIGHT}Invalid JSON returned from discord{Style.RESET_ALL}")
             print(req.json())
             return req.json()
         return req.json()
+
     def changeBio(self, newBio):
         """Changes bio of self.token to newBio"""
         req = self.client.patch("https://discord.com/api/v9/users/@me", json={
             "bio": newBio
         })
         if req.status_code != 200:
-            print(f"{Fore.RED}{Style.BRIGHT}{self.client.headers['Authorization']} failed to change bio to {newBio}{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}{Style.BRIGHT}{self.client.headers['Authorization']} failed to change bio to {newBio}{Style.RESET_ALL}")
         else:
-            print(f"{Fore.GREEN}{Style.BRIGHT}{self.client.headers['Authorization']} changed bio to {newBio}{Style.RESET_ALL}")
+            print(
+                f"{Fore.GREEN}{Style.BRIGHT}{self.client.headers['Authorization']} changed bio to {newBio}{Style.RESET_ALL}")
+
     def leaveServer(self, guildId):
-        req = self.client.delete(f"https://discord.com/api/v9/users/@me/guilds/{guildId}")
+        req = self.client.delete(
+            f"https://discord.com/api/v9/users/@me/guilds/{guildId}")
         if req.status_code != 204:
-            print(f'{Fore.RED}{Style.BRIGHT}[>] Failed to leave guild{Style.RESET_ALL}')
+            print(
+                f'{Fore.RED}{Style.BRIGHT}[>] Failed to leave guild{Style.RESET_ALL}')
         else:
-            print(f'{Fore.GREEN}{Style.BRIGHT}[>] Left guild {guildId}{Style.RESET_ALL}')
+            print(
+                f'{Fore.GREEN}{Style.BRIGHT}[>] Left guild {guildId}{Style.RESET_ALL}')
+
+    def memberShipScreening(self, guildId, rawInvite):
+        """Bypasses membership screening 😃"""
+        # First request 1, gets json
+        req = self.client.get(
+            f"https://discord.com/api/v9/guilds/{guildId}/member-verification?with_guild=false&invite_code={rawInvite}")
+        if req.status_code != 200:
+            print(
+                f"{Fore.RED}{Style.BRIGHT}Failedt to bypass membership screening for {guildId}{Style.RESET_ALL}")
+        req = self.client.put(
+            f"https://discord.com/api/v9/guilds/{guildId}/requests/@me", json=req.json())
+
+    def getMessage(self, messageId, channelId):
+        """Gets the message, returns a message object 😃"""
+        req = self.client.get(
+            f"https://discord.com/api/v9/channels/{channelId}/messages?limit=1&around={messageId}")
+        return req.json() 
+
+    def getReactions(self, messageId, chanenlId):
+        try:
+            mesasgeObject = self.getMessage(messageId, chanenlId)
+            mesasgeObject = mesasgeObject[0]
+            reactions = list(mesasgeObject["reactions"])
+            firstEmoji = reactions[0]["emoji"]
+            return firstEmoji
+        except Exception as e:
+            print(e)
+            return None
+
+    def createReaction(self, messageId, channelId, emojiObject):
+        try:
+            req = self.client.put(
+                f"https://discord.com/api/v9/channels/{channelId}/messages/{messageId}/reactions/{emojiObject['name']}%3A{emojiObject['id']}/%40me")
+            if req.status_code != 204:
+                print(
+                    f"{Fore.RED}{Style.BRIGHT}Failed to bypass reaction verification{Style.RESET_ALL}")
+                return req.json()
+            else:
+                return req.json()
+        except Exception as e:
+            print(e)
+            return None

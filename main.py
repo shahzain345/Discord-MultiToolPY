@@ -13,12 +13,21 @@ from multiprocessing.pool import ThreadPool as Pool
 from globalvariables import sockStatus, qurantinedTokens, sentUsers, blacklistedUsers, unqurantineToken
 from utils import scrapeMembers, showMenu, scrapeMassMention, getInviteInfo, getGoodToken
 
+
 def clearConsole(): return os.system(
     'cls' if os.name in ('nt', 'dos') else 'clear')
 
 
 clearConsole()
-print(Fore.BLUE + pyfiglet.figlet_format("Discord-MultiTool-PY"))
+print(Fore.BLUE + Style.BRIGHT + """
+██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗     ███╗   ███╗██╗   ██╗██╗     ████████╗██╗████████╗ ██████╗  ██████╗ ██╗     
+██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔══██╗    ████╗ ████║██║   ██║██║     ╚══██╔══╝██║╚══██╔══╝██╔═══██╗██╔═══██╗██║     
+██║  ██║██║███████╗██║     ██║   ██║██████╔╝██║  ██║    ██╔████╔██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
+██║  ██║██║╚════██║██║     ██║   ██║██╔══██╗██║  ██║    ██║╚██╔╝██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
+██████╔╝██║███████║╚██████╗╚██████╔╝██║  ██║██████╔╝    ██║ ╚═╝ ██║╚██████╔╝███████╗   ██║   ██║   ██║   ╚██████╔╝╚██████╔╝███████╗
+╚═════╝ ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝     ╚═╝     ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝
+                                                                                                                        P Y T H O N
+""" + Style.RESET_ALL)
 print(f'{Style.BRIGHT}By Shahzain\n\n')
 with open("input/tokens.txt") as fp:
     tokens = fp.read().splitlines()
@@ -29,7 +38,7 @@ if len(tokens) == 0:
         f"{Fore.RED}{Style.BRIGHT}[?] Input some tokens before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
     exit()
-if len(open("input/proxies.txt").read().splitlines()) == 0:
+if len(open("input/proxies.txt").read().splitlines()) == 0 and config["proxyless"] == False:
     print(
         f"{Fore.RED}{Style.BRIGHT}[?] Input some proxies before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
@@ -37,7 +46,7 @@ if len(open("input/proxies.txt").read().splitlines()) == 0:
 
 
 def setTitle(): return os.system(
-    f'title Discord MassDM | Tokens: {len(tokens)} | Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
+    f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
 )
 
 
@@ -51,13 +60,19 @@ def checkToken(token):
         goodtokens.append(token)
 
 
-def joinServer(token, rawInvite, delay):
+def joinServer(token, rawInvite, delay, messageId, channelId):
     time.sleep(delay)
     massDm = MassDM(token)
-    o = massDm.joinServer(rawInvite)
+    o, resJSON = massDm.joinServer(rawInvite)
     if o != "Joined":
         return None
     else:
+        guildId = resJSON["guild"]["id"]
+        if resJSON["show_verification_form"] == True and config["bypass_membership_screening"] == True:
+            massDm.memberShipScreening(guildId, rawInvite)
+        if messageId != None:
+            emojiObject = massDm.getReactions(messageId, channelId)
+            massDm.createReaction(messageId, channelId, emojiObject)
         return True
 
 
@@ -75,9 +90,13 @@ def changeFormat(token: str):
     newToken = token.split(":")[2]
     print(f"{Fore.GREEN}{Style.BRIGHT}{token} => {newToken}")
     return newToken
+
+
 def serverLeaver(token: str, guildId):
     u = MassDM(token)
     u.leaveServer(guildId)
+
+
 def sendDM(token, message, user, delay=None):
     if delay is not None:
         time.sleep(delay)
@@ -86,46 +105,61 @@ def sendDM(token, message, user, delay=None):
         if 'You are opening direct messages too fast' in d.text:
             qurantinedTokens.append(token)
             threading.Thread(target=unqurantineToken, args=(token, )).start()
-            print(f"{Fore.GREEN}{Style.BRIGHT}{token} is ratelimited{Style.RESET_ALL}")
+            print(
+                f"{Fore.GREEN}{Style.BRIGHT}{token} is ratelimited{Style.RESET_ALL}")
         elif 'Cannot send messages to this user' in d.text:
             blacklistedUsers.append(user)
         elif 'You need to verify your account in order to perform this action' in d.text or '401: Unauthorized' in d.text:
             qurantinedTokens.append(token)
-            print(f"{Fore.RED}{Style.BRIGHT}{token} got locked during testing{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}{Style.BRIGHT}{token} got locked during testing{Style.RESET_ALL}")
     else:
         massDm = MassDM(token)
         d = massDm.sendDM(message, user)
         if 'You are opening direct messages too fast' in d.text:
             qurantinedTokens.append(token)
             threading.Thread(target=unqurantineToken, args=(token, )).start()
-            print(f"{Fore.GREEN}{Style.BRIGHT}{token} is ratelimited{Style.RESET_ALL}")
+            print(
+                f"{Fore.GREEN}{Style.BRIGHT}{token} is ratelimited{Style.RESET_ALL}")
         elif 'Cannot send messages to this user' in d.text:
             blacklistedUsers.append(user)
         elif 'You need to verify your account in order to perform this action' in d.text or '401: Unauthorized' in d.text:
             qurantinedTokens.append(token)
-            print(f"{Fore.RED}{Style.BRIGHT}{token} got locked during testing{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}{Style.BRIGHT}{token} got locked during testing{Style.RESET_ALL}")
+
+
 def spamDm(token, userId, message):
     massdn = MassDM(token=token)
     while True:
         massdn.sendDM(message, userId)
+
+
 def bioChanger(token, newbio):
     o = MassDM(token)
     o.changeBio(newbio)
+
 
 def spamServer(token, channelId, message, massMention, massMentionSize):
     massDm = MassDM(token)
     while True:
         massDm.sendMessageInChannel(
             channelId, message, massMention, massMentionSize)
+
+
 def serverCheck(token, guildId):
     massDm = MassDM(token)
     res = massDm.getGuild(guildId)
     if "name" not in res:
-        print(f"{Fore.RED}{Style.BRIGHT}{token} is not in server: {guildId}{Style.RESET_ALL}")
+        print(
+            f"{Fore.RED}{Style.BRIGHT}{token} is not in server: {guildId}{Style.RESET_ALL}")
         return False
     else:
-        print(f"{Fore.GREEN}{Style.BRIGHT}{token} is in server: {res['name']}{Style.RESET_ALL}")
+        print(
+            f"{Fore.GREEN}{Style.BRIGHT}{token} is in server: {res['name']}{Style.RESET_ALL}")
         return True
+
+
 def menu():
     tokens = open("input/tokens.txt").read().splitlines()
     showMenu()
@@ -153,18 +187,26 @@ def menu():
         goodtokens.clear()
         return menu()
     if choice == 2:
-        rawInvite = str(input(f"{Fore.GREEN}Enter your invite: {Style.RESET_ALL}")).split(
+        rawInvite = str(input(f"{Fore.GREEN}{Style.BRIGHT}Enter your invite: {Style.RESET_ALL}")).split(
             "discord.gg/")[1]
+        messageId = None if config["bypass_reaction_verification"] == False else str(input(
+            f"{Fore.GREEN}{Style.BRIGHT}Enter the messageId the reaction is on: {Style.RESET_ALL}"))
+        channelId = None if config["bypass_reaction_verification"] == False else str(input(
+            f"{Fore.GREEN}{Style.BRIGHT}Enter the channelId the message is on: {Style.RESET_ALL}"))
         req1 = getInviteInfo(rawInvite)
         if req1 == {"message": "Unknown Invite", "code": 10006}:
-            print(f"{Fore.RED}{Style.BRIGHT}Invalid Invite: {rawInvite}{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}{Style.BRIGHT}Invalid Invite: {rawInvite}{Style.RESET_ALL}")
             return menu()
         else:
-            print(f"{Fore.GREEN}{Style.BRIGHT}Valid Invite: {rawInvite}{Style.RESET_ALL}")
-        delay = int(input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}")) if config["useDelays"] == True else 0
+            print(
+                f"{Fore.GREEN}{Style.BRIGHT}Valid Invite: {rawInvite}{Style.RESET_ALL}")
+        delay = int(input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}")
+                    ) if config["useDelays"] == True else 0
         pool = Pool(1000)
         for token in tokens:
-            pool.apply_async(joinServer, (token, rawInvite, delay)) if config["useDelays"] == False else pool.apply(joinServer, (token, rawInvite, delay))
+            pool.apply_async(joinServer, (token, rawInvite, delay, messageId, channelId)) if config["useDelays"] == False else pool.apply(
+                joinServer, (token, rawInvite, delay, messageId, channelId))
         pool.close()
         pool.join()
         return menu()
@@ -191,7 +233,8 @@ def menu():
         return menu()
     if choice == 5:
         print(f"{Fore.GREEN}{Style.BRIGHT}Starting Mass DM{Style.RESET_ALL}")
-        channelId = str(input(f"{Fore.GREEN}{Style.BRIGHT}Enter channelId to scrape:{Style.RESET_ALL}"))
+        channelId = str(
+            input(f"{Fore.GREEN}{Style.BRIGHT}Enter channelId to scrape:{Style.RESET_ALL}"))
         o = MassDM(getGoodToken())
         guild = o.getChannel(channelId)
         scrapeMembers(getGoodToken(), guild, channelId)
@@ -200,11 +243,15 @@ def menu():
             filter(lambda member: member not in sentUsers, scrappedMembers))
         pool = Pool(450)
         messageObj = json.load(open("message.json"))
-        delay = input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}") if config["useDelays"] == True else None
+        delay = input(
+            f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}") if config["useDelays"] == True else None
         for userId in filteredMembers:
-            if userId in sentUsers or userId in blacklistedUsers: continue
-            variableReplacedMsg = str(messageObj["message"]).replace("<@user>", f"<@{userId}>")
-            pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
+            if userId in sentUsers or userId in blacklistedUsers:
+                continue
+            variableReplacedMsg = str(messageObj["message"]).replace(
+                "<@user>", f"<@{userId}>")
+            pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(
+                sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
         return menu()
     if choice == 12:
         print(f"{Fore.GREEN}{Style.BRIGHT}Spamming server{Style.RESET_ALL}")
@@ -244,7 +291,8 @@ def menu():
         return menu()
     if choice == 8:
         print(f"{Fore.GREEN}{Style.BRIGHT}Member scrapper{Style.RESET_ALL}")
-        cId = input(f"{Fore.GREEN}{Style.RESET_ALL}Enter the channelId: {Style.RESET_ALL}")
+        cId = input(
+            f"{Fore.GREEN}{Style.RESET_ALL}Enter the channelId: {Style.RESET_ALL}")
         gId = MassDM(random.choice(tokens)).getChannel(cId)
         scrapeMembers(getGoodToken(), gId, cId)
     if choice == 13:
@@ -255,10 +303,11 @@ def menu():
         input(
             f"{Fore.CYAN}{Style.BRIGHT}Press enter to return to menu: {Style.RESET_ALL}")
         return menu()
-    
+
     if choice == 11:
         print(f"{Fore.GREEN}{Style.BRIGHT}Server checker{Style.RESET_ALL}")
-        guildId = str(input(f"{Fore.GREEN}{Style.BRIGHT}Please enter the serverId: {Style.RESET_ALL}"))
+        guildId = str(
+            input(f"{Fore.GREEN}{Style.BRIGHT}Please enter the serverId: {Style.RESET_ALL}"))
         pool = Pool(1000)
         for token in tokens:
             pool.apply_async(serverCheck, (token, guildId))
@@ -275,26 +324,33 @@ def menu():
         pool.join()
         return menu()
     if choice == 15:
-        choice2 = input(f"{Fore.RED}{Style.BRIGHT}Are you sure you want to exit?: (y/n){Style.RESET_ALL}").lower()
+        choice2 = input(
+            f"{Fore.RED}{Style.BRIGHT}Are you sure you want to exit?: (y/n){Style.RESET_ALL}").lower()
         if choice2 != "y":
             return menu()
         clearConsole()
         intNum = 3
         for i in range(4):
-            print(Fore.GREEN + pyfiglet.figlet_format(f"Exiting in: {intNum-i}s"))
+            print(Fore.GREEN +
+                  pyfiglet.figlet_format(f"Exiting in: {intNum-i}s"))
             time.sleep(1)
             clearConsole()
-        print(Fore.GREEN + Style.BRIGHT + pyfiglet.figlet_format("Thank You For Using This Tool") + Style.RESET_ALL)
+        print(Fore.GREEN + Style.BRIGHT +
+              pyfiglet.figlet_format("Thank You For Using This Tool") + Style.RESET_ALL)
         print(f"{Style.BRIGHT}By Shahzain{Style.RESET_ALL}")
         exit()
     if choice == 10:
         print(f"{Fore.GREEN}{Style.BRIGHT}Server leaver{Style.RESET_ALL}")
-        guildId = str(input(f"{Fore.GREEN}Enter the server Id: {Style.RESET_ALL}"))
+        guildId = str(
+            input(f"{Fore.GREEN}Enter the server Id: {Style.RESET_ALL}"))
         pool = Pool(1000)
         for token in tokens:
             pool.apply_async(serverLeaver, (token, guildId, ))
         pool.close()
         pool.join()
         return menu()
+
+
 setTitle()
+print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}?{Style.RESET_ALL}]{Fore.YELLOW} Proxyless is on!, please switch to proxies if you want to avoid ratelimits{Style.RESET_ALL}\n\n") if config["proxyless"] == True else None
 menu()

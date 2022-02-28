@@ -5,7 +5,6 @@ from random import choice
 from massdm import MassDM
 from itertools import cycle
 from globalvariables import qurantinedTokens
-from json import load
 def showMenu():
     print(f'{Style.BRIGHT}{Fore.YELLOW}1: Check Tokens {Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}2: Join Server {Style.RESET_ALL}')
@@ -23,6 +22,13 @@ def showMenu():
     print(f'{Style.BRIGHT}{Fore.YELLOW}14: Bio Changer (Bio list required(input/bios.txt)) [Token]{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}15: Exit{Style.RESET_ALL}')
 def scrapeMassMention(token, guildId, channelId):
+        o = MassDM(token)
+        res = o.getGuild(guildId)
+        if "name" not in res:
+            print(f"{token} is not in {guildId}")
+            token = getGoodToken()
+            o.client.close() # closes the session.
+            o = MassDM(token) # starts a new session with the new token.
         scrapper = MemberScrapper(token=token)
         members = scrapper.get_members(guildId, channelId)
         data = []
@@ -36,7 +42,6 @@ def scrapeMassMention(token, guildId, channelId):
         with open("scraped/massmention.txt", "a") as fp:
             for userId in data:
                 fp.write(str(userId) + "\n")
-        o = MassDM(token)
         guildName = o.getGuild(guildId)["name"] if 'name' in o.getGuild(guildId) else guildId
         print(f"{Fore.GREEN}{Style.BRIGHT}Successfully scrapped {len(data)} members in {guildName}{Style.RESET_ALL}")
 def getInviteInfo(rawInvite):
