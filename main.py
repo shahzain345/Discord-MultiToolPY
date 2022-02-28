@@ -251,11 +251,11 @@ def menu():
             if config["sendMultitpleMessages"] == True:
                 good_token = getGoodToken()
                 for msg in messageObj:
-                    variableReplacedMsg = str(msg["message"]).replace(
+                    variableReplacedMsg = str(msg["content"]).replace(
                         "<@user>", f"<@{userId}>")
                     pool.apply_async(sendDM, (good_token, variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(
                         sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
-            variableReplacedMsg = str(messageObj[0]["message"]).replace(
+            variableReplacedMsg = str(messageObj[0]["content"]).replace(
                         "<@user>", f"<@{userId}>")
             pool.apply_async(sendDM, (getGoodToken(), variableReplacedMsg, userId, delay)) if config["useDelays"] == False else pool.apply(
                 sendDM, (getGoodToken(), variableReplacedMsg, userId, delay))
