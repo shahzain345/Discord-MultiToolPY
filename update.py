@@ -1,7 +1,7 @@
 ## Multitool auto updater
 ## This file will look for updates and if there is any it will automatically install it.
 ## Please avoid changing anything in this file.
-APP_VERSION = "1.0.3"
+APP_VERSION = "1.0.4"
 APP_NAME = "Discord MultiTool"
 
 import httpx
