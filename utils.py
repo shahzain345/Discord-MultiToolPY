@@ -20,7 +20,8 @@ def showMenu():
     print(f'{Style.BRIGHT}{Fore.YELLOW}12: Server spammer{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}13: Credits{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}14: Bio Changer (Bio list required(input/bios.txt)) [Token]{Style.RESET_ALL}')
-    print(f'{Style.BRIGHT}{Fore.YELLOW}15: Exit{Style.RESET_ALL}')
+    print(f'{Style.BRIGHT}{Fore.YELLOW}15: Reaction adder{Style.RESET_ALL}')
+    print(f'{Style.BRIGHT}{Fore.YELLOW}16: Exit{Style.RESET_ALL}')
 def scrapeMassMention(token, guildId, channelId):
         o = MassDM(token)
         res = o.getGuild(guildId)
@@ -74,5 +75,5 @@ def scrapeMembers(token, guildId, channelId):
         guildName = o.getGuild(guildId)["name"]
         print(f"{Fore.GREEN}{Style.BRIGHT}Successfully scrapped {len(data)} members in {guildName}{Style.RESET_ALL}")
 def getVersion():
-    version = "1.0.6"
+    version = "1.0.7"
     return version

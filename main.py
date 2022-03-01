@@ -126,8 +126,11 @@ def sendDM(token, message, user, delay=None):
             qurantinedTokens.append(token)
             print(
                 f"{Fore.RED}{Style.BRIGHT}{token} got locked during testing{Style.RESET_ALL}")
-
-
+def reactionAdder(token, messageId, channelId):
+    l = MassDM(token)
+    emojiObject = l.getReactions(messageId, channelId)
+    l.createReaction(messageId, channelId, emojiObject)
+    print(f"{Fore.GREEN}{Style.BRIGHT}Added reaction on: {messageId}{Style.RESET_ALL}")
 def spamDm(token, userId, message):
     massdn = MassDM(token=token)
     while True:
@@ -164,7 +167,7 @@ def menu():
     showMenu()
     choice = int(input(
         f"\n\n{Fore.LIGHTBLUE_EX}{Style.BRIGHT}Enter your choice: \n>> {Style.RESET_ALL}"))
-    choices = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15]
+    choices = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     if choice not in choices:
         print(f"{Fore.RED}{Style.BRIGHT}Invalid Choice{Style.RESET_ALL}\n")
         return menu()
@@ -330,6 +333,16 @@ def menu():
         pool.join()
         return menu()
     if choice == 15:
+        print(f"{Fore.GREEN}{Style.BRIGHT}Reaction spammer{Style.RESET_ALL}")
+        messageId = input(f"{Fore.GREEN}{Style.BRIGHT}Enter the messageId of the message the reaction is on: {Style.RESET_ALL}")
+        channelId = input(f"{Fore.GREEN}{Style.BRIGHT}Enter the channelId of the channel the message is on: {Style.RESET_ALL}")
+        pool = Pool(2000)
+        for token in tokens:
+            pool.apply_async(reactionAdder, (token, messageId, channelId))
+        pool.close()
+        pool.join()
+        return menu()
+    if choice == 16:
         choice2 = input(
             f"{Fore.RED}{Style.BRIGHT}Are you sure you want to exit?: (y/n){Style.RESET_ALL}").lower()
         if choice2 != "y":

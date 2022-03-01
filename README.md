@@ -16,6 +16,7 @@
 <li>Server Joiner(Captcha support)</li>
 <li>Server Leaver</li>
 <li>Member Scrapper</li>
+<li>Reaction adder</li>
 <li>Username Scrapper(Soon)</li>
 <li>Easy to use and setup</li>
 <li>Server spammer(Has MassMention)</li>
