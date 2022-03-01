@@ -29,6 +29,7 @@ print(Fore.BLUE + Style.BRIGHT + """
                                                                                                                         P Y T H O N
 """ + Style.RESET_ALL)
 print(f'{Style.BRIGHT}By Shahzain\n\n')
+lookforupdates()
 with open("input/tokens.txt") as fp:
     tokens = fp.read().splitlines()
 with open("config.json") as fp:
@@ -43,8 +44,6 @@ if len(open("input/proxies.txt").read().splitlines()) == 0 and config["proxyless
         f"{Fore.RED}{Style.BRIGHT}[?] Input some proxies before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
     exit()
-lookforupdates()
-
 def setTitle(): return os.system(
     f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
 )
