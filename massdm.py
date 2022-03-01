@@ -50,13 +50,13 @@ class MassDM:
         """Returns a random str with numbers only, len=18, this is required for sending messages"""
         return "".join(random.choice(string.digits) for i in range(18))
 
-    def getCap(self):
+    def getCap(self, sitekey):
         captchaApi = self.config["captcha_api"]
         captchaKey = self.config["captcha_key"]
         solvedCaptcha = None
         taskId = ""
         taskId = httpx.post(f"https://api.{captchaApi}/createTask", json={"clientKey": captchaKey, "task": {"type": "HCaptchaTaskProxyless", "websiteURL": "https://discord.com/",
-                            "websiteKey": "4c672d35-0701-42b2-88c3-78380b0db560", "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0"}}, timeout=30).json()
+                            "websiteKey": sitekey, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0"}}, timeout=30).json()
         if taskId.get("errorId") > 0:
             print(f"[-] createTask - {taskId.get('errorDescription')}!")
             return None
@@ -111,8 +111,14 @@ class MassDM:
 
     def joinServer(self, rawInvite):
         """Joins self.token to rawInvite, returns a str "Joined" | "NotJoined" """
+        req = self.client.post(f"https://discord.com/api/v9/invites/{rawInvite}", json={})
+        if "captcha_key" not in req.json():
+            print(
+                f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
+            return "Joined", req.json()
+        captcha_sitekey = req.json()["captcha_sitekey"]
         req = self.client.post(
-            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap()})
+            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap(captcha_sitekey)})
         if req.status_code == 200:
             print(
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")

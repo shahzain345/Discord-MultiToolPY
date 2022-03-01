@@ -74,5 +74,5 @@ def scrapeMembers(token, guildId, channelId):
         guildName = o.getGuild(guildId)["name"]
         print(f"{Fore.GREEN}{Style.BRIGHT}Successfully scrapped {len(data)} members in {guildName}{Style.RESET_ALL}")
 def getVersion():
-    version = "1.0.5"
+    version = "1.0.6"
     return version
