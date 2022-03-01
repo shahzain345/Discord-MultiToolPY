@@ -36,4 +36,3 @@ def lookforupdates():
         open("update.py", 'w').write(req)
         print(f"{Fore.GREEN}{Style.BRIGHT}Installed MultiTool version {CURRENT_VERSION}\nPlease restart the tool.{Style.RESET_ALL}")
         exit()
-lookforupdates()
