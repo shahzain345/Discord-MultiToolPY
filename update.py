@@ -14,9 +14,12 @@ def lookforupdates():
     }).json()
     if req["current"] == True:
         print(f"{Fore.GREEN}{Style.BRIGHT}You are up to date!{Style.RESET_ALL}")
+        if "message" in req:
+            print(f"{Fore.YELLOW}{Style.BRIGHT}The api returned a message as well while looking for updates: \n{req['message']}{Style.RESET_ALL}")
     else:
         CURRENT_VERSION = req["version"]
         print(f"{Fore.LIGHTBLUE_EX}{Style.BRIGHT}You are not up to date.{Style.RESET_ALL}")
+        if "message" in req: print(f"{Fore.YELLOW}{Style.BRIGHT}The api returned a message as well while looking for updates: \n{req['message']}{Style.RESET_ALL}")
         choice = input(f"Do you wish to install MultiTool Version: {CURRENT_VERSION}? This will reset all your configuration files (y/n). \n>> ").lower()
         if choice != "y":
             return None

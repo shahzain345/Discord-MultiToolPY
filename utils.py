@@ -100,5 +100,5 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.1.0"
+    version = "1.10.1"
     return version
