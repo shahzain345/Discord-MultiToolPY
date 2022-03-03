@@ -18,7 +18,7 @@ def lookforupdates():
         CURRENT_VERSION = req["version"]
         print(f"{Fore.LIGHTBLUE_EX}{Style.BRIGHT}You are not up to date.{Style.RESET_ALL}")
         choice = input(f"Do you wish to install MultiTool Version: {CURRENT_VERSION}? This will reset all your configuration files (y/n). \n>> ").lower()
-        if choice == "n":
+        if choice != "y":
             return None
         req = httpx.get("https://raw.githubusercontent.com/shahzain345/Discord-MultiToolPY/main/main.py")
         open("main.py", 'w').write(req.text)
