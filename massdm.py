@@ -1,4 +1,3 @@
-from tkinter import N
 import httpx
 import time
 from colorama import Fore, Style
