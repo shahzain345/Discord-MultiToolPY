@@ -56,7 +56,6 @@
     "friendBeforeDM": false,
     "request_timeout": 30
 }
-}
 ```
 ## Need Help?
 Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
