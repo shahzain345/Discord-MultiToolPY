@@ -44,7 +44,7 @@ if len(open("input/proxies.txt").read().splitlines()) == 0 and config["proxyless
         f"{Fore.RED}{Style.BRIGHT}[?] Input some proxies before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
     exit()
-def setTitle(): return os.system(
+def setTitle(tokens: list): return os.system(
     f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
 )
 
@@ -164,10 +164,11 @@ def serverCheck(token, guildId):
 
 def menu():
     tokens = open("input/tokens.txt").read().splitlines()
+    setTitle(tokens)
     showMenu()
     choice = int(input(
         f"\n\n{Fore.LIGHTBLUE_EX}{Style.BRIGHT}Enter your choice: \n>> {Style.RESET_ALL}"))
-    choices = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    choices = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
     if choice not in choices:
         print(f"{Fore.RED}{Style.BRIGHT}Invalid Choice{Style.RESET_ALL}\n")
         return menu()
@@ -292,7 +293,7 @@ def menu():
             f"{Fore.GREEN}{Style.BRIGHT}Enter the message: {Style.RESET_ALL}")
         userId = input(
             f"{Fore.GREEN}{Style.BRIGHT}Enter the userId: {Style.RESET_ALL}")
-        pool = Pool(20)
+        pool = Pool(1000)
         for token in tokens:
             pool.apply_async(spamDm, (token, userId, message))
         pool.close()
@@ -342,7 +343,7 @@ def menu():
         pool.close()
         pool.join()
         return menu()
-    if choice == 16:
+    if choice == 17:
         choice2 = input(
             f"{Fore.RED}{Style.BRIGHT}Are you sure you want to exit?: (y/n){Style.RESET_ALL}").lower()
         if choice2 != "y":
@@ -368,8 +369,12 @@ def menu():
         pool.close()
         pool.join()
         return menu()
-
-
-setTitle()
+    if choice == 16:
+        clearConsole()
+        print(f"{Fore.GREEN}{Style.BRIGHT}Showing configuration{Style.RESET_ALL}")
+        for configuration in config.items():
+            print(f'[{Fore.GREEN}>{Style.RESET_ALL}] {configuration[0]}: {configuration[1]} \n')
+        input("Press enter to return back to menu")
+        return menu()
 print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}?{Style.RESET_ALL}]{Fore.YELLOW} Proxyless is on!, please switch to proxies if you want to avoid ratelimits{Style.RESET_ALL}\n\n") if config["proxyless"] == True else None
 menu()

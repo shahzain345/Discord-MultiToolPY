@@ -27,7 +27,8 @@ def showMenu():
     print(
         f'{Style.BRIGHT}{Fore.YELLOW}14: Bio Changer (Bio list required(input/bios.txt)) [Token]{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}15: Reaction adder{Style.RESET_ALL}')
-    print(f'{Style.BRIGHT}{Fore.YELLOW}16: Exit{Style.RESET_ALL}')
+    print(f'{Style.BRIGHT}{Fore.YELLOW}16: Show configuration{Style.RESET_ALL}')
+    print(f'{Style.BRIGHT}{Fore.YELLOW}17: Exit{Style.RESET_ALL}')
 
 
 def scrapeMassMention(token, guildId, channelId):
@@ -61,12 +62,12 @@ def getInviteInfo(rawInvite):
     if config["proxyless"] == True:
         with Client() as client:
             res = client.get(f'https://discord.com/api/v9/invites/{rawInvite}?with_counts=true', headers={
-                             "Authorization": "undefined"}).json()
+                             "Authorization": "undefined"}, timeout=config["request_timeout"]).json()
             return res
     else:
         with Client(proxies=f"http://{open('input/proxies.txt').read().splitlines()}") as client:
             res = client.get(f'https://discord.com/api/v9/invites/{rawInvite}?with_counts=true', headers={
-                             "Authorization": "undefined"}).json()
+                             "Authorization": "undefined"}, timeout=config["request_timeout"]).json()
             return res
 
 
@@ -100,5 +101,5 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.10.1"
+    version = "1.10.2"
     return version

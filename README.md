@@ -37,6 +37,8 @@
 | <code>proxyless</code>                    | bool | If you want to use the tool without proxies.                                                                                           |
 | <code>proxyProtocol</code>                | str  | Your proxy protocol, by default its http                                                                                               |
 | <code>sendMultitpleMessages</code>        | bool | Set this to true if you want to send multiple messages to the target user                                                              |
+| <code>friendBeforeDM</code>               | bool | Set this to true if you want to send a friend request to the target user before dm.                                                    |
+| <code>request_timeout</code>              | int  | Timeout for all requests in seconds. Increase if slow connection or proxies.                                                           |
 
 ## Example Configuration
 ```json
@@ -44,13 +46,16 @@
     "removeDeadTokens": true,
     "captcha_api": "anti-captcha.com",
     "captcha_key": "your capkey",
-    "useDelays": true,
-    "save_failed_logs": false,
+    "useDelays": false,
+    "save_failed_logs": true,
     "bypass_membership_screening": true,
     "bypass_reaction_verification": false,
-    "proxyless": false,
+    "proxyless": true,
     "proxyProtocol": "http",
-    "sendMultitpleMessages": false
+    "sendMultitpleMessages": false,
+    "friendBeforeDM": false,
+    "request_timeout": 30
+}
 }
 ```
 ## Need Help?

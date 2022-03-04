@@ -1,3 +1,4 @@
+from tkinter import N
 import httpx
 import time
 from colorama import Fore, Style
@@ -20,12 +21,12 @@ def savelogs(logType, message):
     elif logType == "spam":
         open("logs/spammerlogs.txt", 'a').write(message + "\n")
     return True
-
+timeout = config["request_timeout"]
 
 class MassDM:
     def __init__(self, token):
         proxies = open("input/proxies.txt").read().splitlines()
-        self.client = httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
+        self.client = httpx.Client(timeout=timeout,cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
                                                                          "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="}, proxies=f"{config['proxyProtocol']}://{random.choice(proxies)}") if config["proxyless"] == False else httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
                                                                          "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="})
         superproperties = self.client.headers["X-Track"]
@@ -75,6 +76,9 @@ class MassDM:
     def sendDM(self, message, userId) -> httpx.Response:
         """Sends a dm to the given userId"""
         try:
+            if config["friendBeforeDM"] == True:
+                username, discrim = self.getProfile(userId)
+                self.friendUser(username, discrim, None)
             channelId = self.createChat(userId)
             req = self.client.post(f'https://discord.com/api/v9/channels/{channelId}/messages', json={
                 "content": message,
@@ -192,7 +196,28 @@ class MassDM:
             print(
                 f'{Style.BRIGHT}{Fore.GREEN}[>] Sent message, messageId: {req.json()["id"]}{Style.RESET_ALL}')
             return req.json()
-
+    def getProfile(self, userId) -> tuple:
+        req = self.client.get(f"https://discord.com/api/v9/users/{userId}/profile?with_mutual_guilds=true")
+        if req.status_code != 200:
+            return None, None
+        else:
+            j = req.json()
+            username = j["user"]["username"]
+            discrim = j["user"]["discriminator"]
+            return username, discrim
+    def friendUser(self, username, discrim, printLogs=None) -> httpx.Response:
+        """Sends friend request to username#discrim"""
+        req = self.client.post("https://discord.com/api/v9/users/@me/relationships", json={
+            "username": username,
+            "discriminator": discrim
+        })
+        if req.status_code != 204:
+            print(f"{Fore.RED}{Style.BRIGHT}Failed to send friend request to {username}#{discrim}{Style.RESET_ALL}")
+            return req
+        else:
+            if printLogs != None:
+                print(f"{Fore.GREEN}{Style.BRIGHT}Sent friend request to {username}#{discrim}{Style.RESET_ALL}")
+            return req
     def getChannel(self, channelId):
         """Returns id of the server the channel is in"""
         req = self.client.get(
@@ -249,7 +274,6 @@ class MassDM:
                 f"{Fore.RED}{Style.BRIGHT}Failedt to bypass membership screening for {guildId}{Style.RESET_ALL}")
         req = self.client.put(
             f"https://discord.com/api/v9/guilds/{guildId}/requests/@me", json=req.json())
-
     def getMessage(self, messageId, channelId):
         """Gets the message, returns a message object 😃"""
         req = self.client.get(

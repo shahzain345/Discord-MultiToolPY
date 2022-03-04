@@ -1,6 +1,7 @@
 ## Multitool auto updater
 ## This file will look for updates and if there is any it will automatically install it.
 ## Please avoid changing anything in this file.
+from socket import timeout
 from utils import getVersion
 APP_VERSION = getVersion()
 APP_NAME = "Discord MultiTool"
@@ -11,7 +12,7 @@ BASE_URL = "https://multitool.shahzain.me"
 def lookforupdates():
     req = httpx.post(f"{BASE_URL}/api/update", json={
         "v": APP_VERSION
-    }).json()
+    }, timeout=30).json()
     if req["current"] == True:
         print(f"{Fore.GREEN}{Style.BRIGHT}You are up to date!{Style.RESET_ALL}")
         if "message" in req:

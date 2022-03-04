@@ -6,7 +6,9 @@
     "save_failed_logs": true,
     "bypass_membership_screening": true,
     "bypass_reaction_verification": false,
-    "proxyless": false,
+    "proxyless": true,
     "proxyProtocol": "http",
-    "sendMultitpleMessages": false
+    "sendMultitpleMessages": false,
+    "friendBeforeDM": false,
+    "request_timeout": 30
 }
