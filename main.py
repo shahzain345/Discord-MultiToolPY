@@ -163,7 +163,9 @@ def serverCheck(token, guildId):
 
 
 def menu():
+  try:
     tokens = open("input/tokens.txt").read().splitlines()
+    config = json.load(open("config.json"))
     setTitle(tokens)
     showMenu()
     choice = int(input(
@@ -376,5 +378,8 @@ def menu():
             print(f'[{Fore.GREEN}>{Style.RESET_ALL}] {configuration[0]}: {configuration[1]} \n')
         input("Press enter to return back to menu")
         return menu()
+  except Exception as e:
+       print(f"{Fore.RED}{Style.BRIGHT}[?] Exception: {e} {Style.RESET_ALL}")
+       return menu()
 print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}?{Style.RESET_ALL}]{Fore.YELLOW} Proxyless is on!, please switch to proxies if you want to avoid ratelimits{Style.RESET_ALL}\n\n") if config["proxyless"] == True else None
 menu()

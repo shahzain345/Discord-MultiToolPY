@@ -8,9 +8,8 @@ import string
 import json as theJson
 import websocket
 # Main MassDm class
-
-config = theJson.load(open("config.json"))
 def savelogs(logType, message):
+    config = theJson.load(open("config.json"))
     if config["save_failed_logs"] == False:
         return None
     if logType == "invite":
@@ -20,10 +19,12 @@ def savelogs(logType, message):
     elif logType == "spam":
         open("logs/spammerlogs.txt", 'a').write(message + "\n")
     return True
-timeout = config["request_timeout"]
-
+#config = theJson.load(open("config.json"))
+#timeout = config["request_timeout"]
 class MassDM:
     def __init__(self, token):
+        config = theJson.load(open("config.json"))
+        timeout = config["request_timeout"]
         proxies = open("input/proxies.txt").read().splitlines()
         self.client = httpx.Client(timeout=timeout,cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
                                                                          "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="}, proxies=f"{config['proxyProtocol']}://{random.choice(proxies)}") if config["proxyless"] == False else httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
@@ -75,7 +76,7 @@ class MassDM:
     def sendDM(self, message, userId) -> httpx.Response:
         """Sends a dm to the given userId"""
         try:
-            if config["friendBeforeDM"] == True:
+            if self.config["friendBeforeDM"] == True:
                 username, discrim = self.getProfile(userId)
                 self.friendUser(username, discrim, None)
             channelId = self.createChat(userId)
@@ -116,6 +117,9 @@ class MassDM:
         """Joins self.token to rawInvite, returns a str "Joined" | "NotJoined" """
         req = self.client.post(f"https://discord.com/api/v9/invites/{rawInvite}", json={})
         if "captcha_key" not in req.json():
+            if "message" in req.json() and req["message"] == "The user is banned from this guild.":
+                print(f"{self.client.headers['Authorization']} is banned from this guild.")
+                return "NotJoined", req.json()
             print(
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
             return "Joined", req.json()

@@ -65,7 +65,7 @@ def getInviteInfo(rawInvite):
                              "Authorization": "undefined"}, timeout=config["request_timeout"]).json()
             return res
     else:
-        with Client(proxies=f"http://{open('input/proxies.txt').read().splitlines()}") as client:
+        with Client(proxies=f"http://{choice(open('input/proxies.txt').read().splitlines())}") as client:
             res = client.get(f'https://discord.com/api/v9/invites/{rawInvite}?with_counts=true', headers={
                              "Authorization": "undefined"}, timeout=config["request_timeout"]).json()
             return res
@@ -101,5 +101,5 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.10.2"
+    version = "1.10.3"
     return version
