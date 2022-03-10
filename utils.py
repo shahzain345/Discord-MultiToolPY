@@ -76,7 +76,7 @@ def getInviteInfo(rawInvite):
 def getGoodToken():
     """Returns a token that is not qurantined, also websockets it"""
     tokens = open("input/tokens.txt").read().splitlines()
-    c = oad(open("config.json"))
+    c = load(open("config.json"))
     while True:
         token = choice(tokens)
         Thread(target=MassDM(token).websocketToken, daemon=True).start() if c["online_before_dm"] != False else None
@@ -111,5 +111,5 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.10.5"
+    version = "1.10.6"
     return version
