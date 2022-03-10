@@ -1,7 +1,6 @@
 ## Multitool auto updater
 ## This file will look for updates and if there is any it will automatically install it.
 ## Please avoid changing anything in this file.
-from socket import timeout
 from utils import getVersion
 APP_VERSION = getVersion()
 APP_NAME = "Discord MultiTool"

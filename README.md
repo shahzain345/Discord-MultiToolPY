@@ -39,24 +39,28 @@
 | <code>sendMultitpleMessages</code>        | bool | Set this to true if you want to send multiple messages to the target user                                                              |
 | <code>friendBeforeDM</code>               | bool | Set this to true if you want to send a friend request to the target user before dm.                                                    |
 | <code>request_timeout</code>              | int  | Timeout for all requests in seconds. Increase if slow connection or proxies.                                                           |
+| <code>online_before_dm</code>             | bool | Websockets the token before dm, makes it online which is more realistic.                                                               |
 
 ## Example Configuration
 ```json
 {
     "removeDeadTokens": true,
     "captcha_api": "anti-captcha.com",
-    "captcha_key": "your capkey",
+    "captcha_key": "your cap key",
     "useDelays": false,
     "save_failed_logs": true,
     "bypass_membership_screening": true,
     "bypass_reaction_verification": false,
-    "proxyless": true,
+    "proxyless": false,
     "proxyProtocol": "http",
     "sendMultitpleMessages": false,
     "friendBeforeDM": false,
-    "request_timeout": 30
+    "request_timeout": 30,
+    "online_before_dm": false
 }
 ```
+## Next update:
+The next update of this tool will have alot of features. I will make the mass dm less buggy and more faster, you will be able to set delays for basically everything,  the whole interface will be different. also i will add a captcha solver to solve captchas on join it is slow tho but it will work. I will add more cookie handling and the tool will cache cookies and fingerprints for later use. That will lower the chance of your token being locked. Also i will add webhook logs, the tool will send a message thru webhook with logtype and logmessage. If you got any suggestion on what i should add next dm me on guilded or discord with the suggestion and if I like it I will give you credits on the repo.
 ## Need Help?
 Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
 ## How to use?

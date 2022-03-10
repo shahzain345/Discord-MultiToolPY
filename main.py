@@ -98,7 +98,7 @@ def serverLeaver(token: str, guildId):
 
 def sendDM(token, message, user, delay=None):
     if delay is not None:
-        time.sleep(delay)
+        time.sleep(int(delay))
         massDm = MassDM(token)
         d = massDm.sendDM(message, user)
         if 'You are opening direct messages too fast' in d.text:

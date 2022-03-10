@@ -1,3 +1,6 @@
+from concurrent.futures import thread
+from threading import Thread
+from tokenize import Token
 from colorama import Fore, Style
 from memberscrapper import MemberScrapper
 from httpx import Client
@@ -36,9 +39,8 @@ def scrapeMassMention(token, guildId, channelId):
     res = o.getGuild(guildId)
     if "name" not in res:
         print(f"{token} is not in {guildId}")
-        token = getGoodToken()
         o.client.close()  # closes the session.
-        o = MassDM(token)  # starts a new session with the new token.
+        return scrapeMassMention(choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
     scrapper = MemberScrapper(token=token)
     members = scrapper.get_members(guildId, channelId)
     data = []
@@ -55,7 +57,7 @@ def scrapeMassMention(token, guildId, channelId):
     guildName = o.getGuild(guildId)["name"] if 'name' in o.getGuild(
         guildId) else guildId
     print(f"{Fore.GREEN}{Style.BRIGHT}Successfully scrapped {len(data)} members in {guildName}{Style.RESET_ALL}")
-
+    return True
 
 def getInviteInfo(rawInvite):
     config = load(open('config.json'))
@@ -73,15 +75,23 @@ def getInviteInfo(rawInvite):
 
 def getGoodToken():
     """Returns a token that is not qurantined, also websockets it"""
-    tokens = cycle(open("input/tokens.txt").read().splitlines())
+    tokens = open("input/tokens.txt").read().splitlines()
+    c = oad(open("config.json"))
     while True:
-        token = next(tokens)
+        token = choice(tokens)
+        Thread(target=MassDM(token).websocketToken, daemon=True).start() if c["online_before_dm"] != False else None
         if token in qurantinedTokens:
             continue
         return token
 
 
 def scrapeMembers(token, guildId, channelId):
+    o = MassDM(token)
+    res = o.getGuild(guildId)
+    if "name" not in res:
+        print(f"{token} is not in {guildId}")
+        o.client.close()  # closes the session.
+        return scrapeMembers(choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
     scrapper = MemberScrapper(token=token)
     members = scrapper.get_members(guildId, channelId)
     data = []
@@ -101,5 +111,5 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.10.3"
+    version = "1.10.4"
     return version
