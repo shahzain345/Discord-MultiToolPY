@@ -123,7 +123,7 @@ class MassDM:
         captcha_sitekey = req.json()["captcha_sitekey"]
         captcha_rqtoken = req.json()["captcha_rqtoken"]
         req = self.client.post(
-            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap(captcha_sitekey) if self.config["use_captcha_solver"] == False else createChallenge(captcha_sitekey, "discord.com"), "captcha_rqtoken": captcha_rqtoken})
+            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap(captcha_sitekey) if self.config["use_captcha_solver"] == False else None, "captcha_rqtoken": captcha_rqtoken})
         if req.status_code == 200:
             print(
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
