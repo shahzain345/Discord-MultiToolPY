@@ -1,7 +1,7 @@
 import httpx
 import time
 from colorama import Fore, Style
-from globalvariables import getQurantinedToken, qurantineToken, sentUsers, sockStatus
+from globalvariables import getQurantinedToken, qurantineToken, sentUsers, sockStatus, getcachedsession, cachedSessions
 from urllib.parse import urlencode
 import random
 import string
@@ -19,24 +19,22 @@ def savelogs(logType, message):
     elif logType == "spam":
         open("logs/spammerlogs.txt", 'a').write(message + "\n")
     return True
-#config = theJson.load(open("config.json"))
-#timeout = config["request_timeout"]
 class MassDM:
     def __init__(self, token):
         config = theJson.load(open("config.json"))
         timeout = config["request_timeout"]
         proxies = open("input/proxies.txt").read().splitlines()
+        self.config = theJson.load(open("config.json"))
         self.client = httpx.Client(timeout=timeout,cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
                                                                          "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="}, proxies=f"{config['proxyProtocol']}://{random.choice(proxies)}") if config["proxyless"] == False else httpx.Client(cookies={"locale": "en-US"}, headers={"Pragma": "no-cache", "Accept": "*/*", "Host": "discord.com", "Accept-Language": "en-US", "Cache-Control": "no-cache", "Accept-Encoding": "br, gzip, deflate", "Referer": "https://discord.com/", "Connection": "keep-alive", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
                                                                          "X-Track": "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTEzNTQ5LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="})
-        superproperties = self.client.headers["X-Track"]
         self.client.headers["X-Fingerprint"] = self.client.get(
             "https://discord.com/api/v9/experiments", timeout=30).json()["fingerprint"]
         del self.client.headers["X-Track"]
-        self.client.headers["X-Super-Properties"] = superproperties
+        self.client.headers["X-Super-Properties"] = "eyJvcyI6Ik1hYyBPUyBYIiwiYnJvd3NlciI6IlNhZmFyaSIsImRldmljZSI6IiIsInN5c3RlbV9sb2NhbGUiOiJlbi11cyIsImJyb3dzZXJfdXNlcl9hZ2VudCI6Ik1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzEzXzYpIEFwcGxlV2ViS2l0LzYwNS4xLjE1IChLSFRNTCwgbGlrZSBHZWNrbykgVmVyc2lvbi8xMy4xLjIgU2FmYXJpLzYwNS4xLjE1IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMuMS4yIiwib3NfdmVyc2lvbiI6IjEwLjEzLjYiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwicmVsZWFzZV9jaGFubmVsIjoic3RhYmxlIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTE3OTE4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ=="
         self.client.headers["Authorization"] = token
         self.client.headers["Origin"] = "https://discord.com"
-        self.config = theJson.load(open("config.json"))
+        cachedSessions.append({ "session": self.client, "token": token })
 
     def createChat(self, userId):
         """Creates a DM channel with userId and returns channelId or None"""
@@ -50,7 +48,6 @@ class MassDM:
     def getRandomNonce(self):
         """Returns a random str with numbers only, len=18, this is required for sending messages"""
         return "".join(random.choice(string.digits) for i in range(18))
-
     def getCap(self, sitekey):
         captchaApi = self.config["captcha_api"]
         captchaKey = self.config["captcha_key"]
@@ -66,13 +63,13 @@ class MassDM:
         while not solvedCaptcha:
             captchaData = httpx.post(f"https://api.{captchaApi}/getTaskResult", json={
                                      "clientKey": captchaKey, "taskId": taskId}, timeout=30).json()
+            if captchaData["errorId"] > 0:
+                print(f"[-] getTaskResult - {captchaData['errorDescription']}")
+                return None
             if captchaData.get("status") == "ready":
                 solvedCaptcha = captchaData.get(
                     "solution").get("gRecaptchaResponse")
                 return solvedCaptcha
-    def sendFriendRequest(self, username, discrim) -> httpx.Response:
-        """Sends a friend request to the given user returns httpx.Response, will add this soon cuz i am tired 😃"""
-        return None
     def sendDM(self, message, userId) -> httpx.Response:
         """Sends a dm to the given userId"""
         try:
@@ -112,9 +109,9 @@ class MassDM:
             print(
                 f"{Fore.GREEN}{Style.BRIGHT}{self.client.headers['Authorization']} is valid {Style.RESET_ALL}")
             return "Valid"
-
-    def joinServer(self, rawInvite):
+    def joinServer(self, rawInvite, contextProperties):
         """Joins self.token to rawInvite, returns a str "Joined" | "NotJoined" """
+        self.client.headers["X-Context-Properties"] = contextProperties
         req = self.client.post(f"https://discord.com/api/v9/invites/{rawInvite}", json={})
         if "captcha_key" not in req.json():
             if "message" in req.json() and req["message"] == "The user is banned from this guild.":
@@ -124,17 +121,20 @@ class MassDM:
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
             return "Joined", req.json()
         captcha_sitekey = req.json()["captcha_sitekey"]
+        captcha_rqtoken = req.json()["captcha_rqtoken"]
         req = self.client.post(
-            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap(captcha_sitekey)})
+            f"https://discord.com/api/v9/invites/{rawInvite}", json={"captcha_key": self.getCap(captcha_sitekey) if self.config["use_captcha_solver"] == False else createChallenge(captcha_sitekey, "discord.com"), "captcha_rqtoken": captcha_rqtoken})
         if req.status_code == 200:
             print(
                 f"{Fore.GREEN}{self.client.headers['Authorization']} joined server! {Style.RESET_ALL}")
+            del self.client.headers["X-Context-Properties"]
             return "Joined", req.json()
         else:
             print(
                 f"{Fore.RED}{self.client.headers['Authorization']} failed to join server! {Style.RESET_ALL}")
             savelogs(
-                "invite", f"{self.client.headers['Authorization']} failed to join {rawInvite}")
+                "invite", f"{self.client.headers['Authorization']} failed to join {rawInvite}, {req.json()}")
+            del self.client.headers["X-Context-Properties"]
             return "NotJoined", req.json()
 
     def changeUsername(self, newUsername, password):
@@ -262,10 +262,10 @@ class MassDM:
             f"https://discord.com/api/v9/users/@me/guilds/{guildId}")
         if req.status_code != 204:
             print(
-                f'{Fore.RED}{Style.BRIGHT}[>] Failed to leave guild{Style.RESET_ALL}')
+                f'{Fore.RED}{Style.BRIGHT}Failed to leave guild{Style.RESET_ALL}')
         else:
             print(
-                f'{Fore.GREEN}{Style.BRIGHT}[>] Left guild {guildId}{Style.RESET_ALL}')
+                f'{Fore.GREEN}{Style.BRIGHT}Left guild {guildId}{Style.RESET_ALL}')
 
     def memberShipScreening(self, guildId, rawInvite):
         """Bypasses membership screening 😃"""

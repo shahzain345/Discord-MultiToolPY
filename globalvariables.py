@@ -1,8 +1,12 @@
+from ctypes import Union
 import time
+from httpx import Client
 global qurantinedTokens
 global sentUsers
 global sockStatus
+global cachedSessions
 sockStatus = "Open" 
+cachedSessions = []
 sentUsers = []
 qurantinedTokens = []
 blacklistedUsers = []
@@ -20,3 +24,8 @@ def unqurantineToken(token):
         if qurantinedTokens[i] == token:
             qurantinedTokens.pop(i)
             return None
+def getcachedsession(token): 
+    for session in cachedSessions:
+        if session["token"] == token:
+            return session["session"]
+    return None

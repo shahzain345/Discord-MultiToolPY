@@ -1,6 +1,4 @@
-from concurrent.futures import thread
 from threading import Thread
-from tokenize import Token
 from colorama import Fore, Style
 from memberscrapper import MemberScrapper
 from httpx import Client
@@ -8,7 +6,8 @@ from random import choice
 from massdm import MassDM
 from itertools import cycle
 from globalvariables import qurantinedTokens
-from json import load
+from json import load, dumps
+from base64 import b64encode as b
 
 
 def showMenu():
@@ -20,7 +19,7 @@ def showMenu():
     print(f'{Style.BRIGHT}{Fore.YELLOW}5: Mass DM {Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}6: Single DM Spam {Style.RESET_ALL}')
     print(
-        f'{Style.BRIGHT}{Fore.YELLOW}7: Username Changer (Username list required(input/usernames.txt)) [Email:Pass:Token] (Soon){Style.RESET_ALL}')
+        f'{Style.BRIGHT}{Fore.YELLOW}7: Username Changer (Username list required(input/usernames.txt)) [Email:Pass:Token]{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}8: Scrape Members{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}9: Scrape Usernames{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}10: Server Leaver{Style.RESET_ALL}')
@@ -32,6 +31,7 @@ def showMenu():
     print(f'{Style.BRIGHT}{Fore.YELLOW}15: Reaction adder{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}16: Show configuration{Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.YELLOW}17: Exit{Style.RESET_ALL}')
+    print(f'{Style.BRIGHT}{Fore.YELLOW}18: Restart{Style.RESET_ALL}')
 
 
 def scrapeMassMention(token, guildId, channelId):
@@ -111,5 +111,11 @@ def scrapeMembers(token, guildId, channelId):
 
 
 def getVersion():
-    version = "1.10.6"
+    version = "1.10.7"
     return version
+
+def buildContextProperites(channelId, guildId) -> str:
+    """Builds the context properties header which we need to use while joining the guild. It is not required but sending this as well will decrease the chance of your token getting locked so yeah."""
+    return b(dumps({"location":"Join Guild","location_guild_id":guildId,"location_channel_id":channelId,"location_channel_type":0}, separators=(',', ':')).encode()).decode()
+if __name__ == "__main__":
+    print(buildContextProperites("906184472716783626", "906181942247055400"))

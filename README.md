@@ -40,6 +40,7 @@
 | <code>friendBeforeDM</code>               | bool | Set this to true if you want to send a friend request to the target user before dm.                                                    |
 | <code>request_timeout</code>              | int  | Timeout for all requests in seconds. Increase if slow connection or proxies.                                                           |
 | <code>online_before_dm</code>             | bool | Websockets the token before dm, makes it online which is more realistic.                                                               |
+| <code>use_captcha_solver</code>           | bool | Set this to true if you want to use MultiTool's custom captcha-solver for solving the captcha on joiner.                               |
 
 ## Example Configuration
 ```json
@@ -47,6 +48,7 @@
     "removeDeadTokens": true,
     "captcha_api": "anti-captcha.com",
     "captcha_key": "your cap key",
+    "use_captcha_solver": true,
     "useDelays": false,
     "save_failed_logs": true,
     "bypass_membership_screening": true,

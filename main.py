@@ -1,6 +1,8 @@
 # Made by Shahzain
 # Libs
+import httpx
 import pyfiglet
+import sys
 import threading
 import time
 import json
@@ -11,7 +13,7 @@ from colorama import Fore, Style
 from massdm import MassDM
 from multiprocessing.pool import ThreadPool as Pool
 from globalvariables import sockStatus, qurantinedTokens, sentUsers, blacklistedUsers, unqurantineToken
-from utils import scrapeMembers, showMenu, scrapeMassMention, getInviteInfo, getGoodToken
+from utils import scrapeMembers, showMenu, scrapeMassMention, getInviteInfo, getGoodToken, buildContextProperites
 from update import lookforupdates
 
 def clearConsole(): return os.system(
@@ -34,16 +36,27 @@ with open("input/tokens.txt") as fp:
     tokens = fp.read().splitlines()
 with open("config.json") as fp:
     config = json.load(fp)
+if os.path.exists("hcap.py") == False:
+    print(f"{Fore.YELLOW}{Style.BRIGHT}[?] Hcaptcha solver file was not found. Downloading it..{Style.RESET_ALL}")
+    f = httpx.get("https://raw.githubusercontent.com/shahzain345/Discord-MultiToolPY/main/hcap.py").text
+    open("hcap.py", "w", encoding="utf-8").write(f)
+    print(f"[{Fore.LIGHTCYAN_EX}{Style.BRIGHT}SUCCESS{Style.RESET_ALL}] {Fore.GREEN}{Style.BRIGHT}Hcaptcha solver file downloaded. \nPlease restart the tool {Style.RESET_ALL}")
+    exit()
+if os.path.exists("input/usernames.txt") == False:
+    print(f"{Fore.YELLOW}{Style.BRIGHT}[?] Usernames file was not found. Making it..{Style.RESET_ALL}")
+    open("input/usernames.txt", "w").write("shahzain345")
+    print(f"[{Fore.LIGHTCYAN_EX}{Style.BRIGHT}SUCCESS{Style.RESET_ALL}] {Fore.GREEN}{Style.BRIGHT}Usernames file created. \nPlease restart the tool {Style.RESET_ALL}")
+    exit()
 if len(tokens) == 0:
     print(
         f"{Fore.RED}{Style.BRIGHT}[?] Input some tokens before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
-    exit()
+    quit()
 if len(open("input/proxies.txt").read().splitlines()) == 0 and config["proxyless"] == False:
     print(
         f"{Fore.RED}{Style.BRIGHT}[?] Input some proxies before restarting! {Style.RESET_ALL}")
     input(f"{Style.BRIGHT}Press enter to exit {Style.RESET_ALL}")
-    exit()
+    quit()
 def setTitle(tokens: list): return os.system(
     f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
 )
@@ -59,10 +72,10 @@ def checkToken(token):
         goodtokens.append(token)
 
 
-def joinServer(token, rawInvite, delay, messageId, channelId):
+def joinServer(token, rawInvite, delay, messageId, channelId, ctx):
     time.sleep(delay)
     massDm = MassDM(token)
-    o, resJSON = massDm.joinServer(rawInvite)
+    o, resJSON = massDm.joinServer(rawInvite, ctx)
     if o != "Joined":
         return None
     else:
@@ -73,7 +86,6 @@ def joinServer(token, rawInvite, delay, messageId, channelId):
             emojiObject = massDm.getReactions(messageId, channelId)
             massDm.createReaction(messageId, channelId, emojiObject)
         return True
-
 
 def onlineToken(token):
     massDm = MassDM(token)
@@ -147,7 +159,14 @@ def spamServer(token, channelId, message, massMention, massMentionSize):
     while True:
         massDm.sendMessageInChannel(
             channelId, message, massMention, massMentionSize)
-
+def changeUsername(token: str):
+    if ":" not in token:
+        print(f"{Fore.RED}{Style.BRIGHT}{token} is not [Email:Pass:Token]{Style.RESET_ALL}")
+        return None
+    t = token.split(":")[2]
+    p = token.split(":")[1].split(":")[0]
+    md = MassDM(t)
+    md.changeUsername(random.choice(open("input/usernames.txt").read().splitlines()), p)
 
 def serverCheck(token, guildId):
     massDm = MassDM(token)
@@ -170,7 +189,7 @@ def menu():
     showMenu()
     choice = int(input(
         f"\n\n{Fore.LIGHTBLUE_EX}{Style.BRIGHT}Enter your choice: \n>> {Style.RESET_ALL}"))
-    choices = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    choices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
     if choice not in choices:
         print(f"{Fore.RED}{Style.BRIGHT}Invalid Choice{Style.RESET_ALL}\n")
         return menu()
@@ -208,10 +227,11 @@ def menu():
                 f"{Fore.GREEN}{Style.BRIGHT}Valid Invite: {rawInvite}{Style.RESET_ALL}")
         delay = int(input(f"{Fore.GREEN}{Style.BRIGHT}Enter delay (seconds): {Style.RESET_ALL}")
                     ) if config["useDelays"] == True else 0
+        ctxproperties = buildContextProperites(req1["channel"]["id"], req1["guild"]["id"])
         pool = Pool(1000)
         for token in tokens:
-            pool.apply_async(joinServer, (token, rawInvite, delay, messageId, channelId)) if config["useDelays"] == False else pool.apply(
-                joinServer, (token, rawInvite, delay, messageId, channelId))
+            pool.apply_async(joinServer, (token, rawInvite, delay, messageId, channelId, ctxproperties)) if config["useDelays"] == False else pool.apply(
+                joinServer, (token, rawInvite, delay, messageId, channelId, ctxproperties))
         pool.close()
         pool.join()
         return menu()
@@ -301,6 +321,14 @@ def menu():
         pool.close()
         pool.join()
         return menu()
+    if choice == 7:
+        print(f"{Fore.GREEN}{Style.BRIGHT}Changing usernames..{Style.RESET_ALL}")
+        pool = Pool(1000)
+        for token in tokens:
+            pool.apply_async(changeUsername, (token, ))
+        pool.close()
+        pool.join()
+        return menu()
     if choice == 8:
         print(f"{Fore.GREEN}{Style.BRIGHT}Member scrapper{Style.RESET_ALL}")
         cId = input(
@@ -360,7 +388,7 @@ def menu():
         print(Fore.GREEN + Style.BRIGHT +
               pyfiglet.figlet_format("Thank You For Using This Tool") + Style.RESET_ALL)
         print(f"{Style.BRIGHT}By Shahzain{Style.RESET_ALL}")
-        exit()
+        quit()
     if choice == 10:
         print(f"{Fore.GREEN}{Style.BRIGHT}Server leaver{Style.RESET_ALL}")
         guildId = str(
@@ -378,8 +406,12 @@ def menu():
             print(f'[{Fore.GREEN}>{Style.RESET_ALL}] {configuration[0]}: {configuration[1]} \n')
         input("Press enter to return back to menu")
         return menu()
+    if choice == 18:
+        os.execv(sys.executable, ['python'] + sys.argv)
+        exit()
   except Exception as e:
        print(f"{Fore.RED}{Style.BRIGHT}[?] Exception: {e} {Style.RESET_ALL}")
        return menu()
-print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}?{Style.RESET_ALL}]{Fore.YELLOW} Proxyless is on!, please switch to proxies if you want to avoid ratelimits{Style.RESET_ALL}\n\n") if config["proxyless"] == True else None
+print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}WARNING{Style.RESET_ALL}]{Fore.YELLOW}{Style.BRIGHT} Proxyless is on!, please switch to proxies if you want to avoid ratelimits{Style.RESET_ALL}") if config["proxyless"] == True else None
+print(f"{Style.RESET_ALL}[{Fore.LIGHTRED_EX}{Style.BRIGHT}WARNING{Style.RESET_ALL}]{Fore.YELLOW}{Style.BRIGHT} Hcaptcha solver is currently disabled due to some issues. {Style.RESET_ALL}\n\n")
 menu()
