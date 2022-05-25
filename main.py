@@ -199,11 +199,13 @@ def changeFormat(token: str):
     console.s_print(f"{token} -> {newToken}")
     return newToken
 
-
+def setTitle(tokens: list): return os.system(
+    f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
+)
 async def menu():
     try:
         tokens = open("input/tokens.txt").read().splitlines()
-        os.system()
+        setTitle(tokens)
         print("")
         showMenu()
         print("\n")
@@ -340,6 +342,9 @@ async def menu():
                     await pool.put(friendRequest(token, username, discrim))
         if choice == 11:
             exit()
+        else:
+            console.f_print("Invalid Choice")
+            return await menu()
     except Exception as e:
         console.f_print(e)
         if Utility().config["traceback"]:
