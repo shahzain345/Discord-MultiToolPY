@@ -1,6 +1,0 @@
-httpx
-colorama
-pyfiglet
-websocket-client
-discum
-git+https://github.com/1337Syntax/py-hcaptcha
