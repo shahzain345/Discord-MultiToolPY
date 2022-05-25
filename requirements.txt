@@ -1,0 +1,6 @@
+httpx
+2captcha-python
+tasksio
+colorama
+websocket-client
+emoji

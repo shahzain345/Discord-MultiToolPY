@@ -1,0 +1,21 @@
+{
+    "proxy": {
+        "protocol": "http",
+        "proxyless": true
+    },
+    "captcha": {
+        "api": "anti-captcha.com",
+        "key": "YOUR CAPTCHA KEY"
+    },
+    "joiner": {
+        "useDelays": false,
+        "delay": 10,
+        "bypassMembershipScreening": true,
+        "bypassReactionVerification": false
+    },
+    "removeDeadTokens": true,
+    "preferedThreads": 100000,
+    "saveFailedLogs": true,
+    "requestTimeout": 35,
+    "traceback": false
+}
