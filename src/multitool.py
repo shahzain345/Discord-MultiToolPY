@@ -26,10 +26,6 @@ class MultiTool:
     """
     # Multitool main class
     """
-
-    def __init__(self):
-        return None
-
     async def _init(self, token: str):
         self._utility = Utility()
         self.client = AsyncClient(proxies=self._utility.proxy, cookies={"locale": "en-US"}, headers={
@@ -51,7 +47,8 @@ class MultiTool:
         try:
             self.client.headers["X-Fingerprint"] = res.json().get("fingerprint")
         except:
-            self.client.headers["X-Fingerprint"] = "978733145790775346.rrTzzIPN3Rhcg0CNoN9cuHorzFw"
+            #self.client.headers["X-Fingerprint"] = "992405718051344425.40u0H3W3P2iOxVPP-50_HbyxbcI"
+            None # do nothing if fingerprint aint found, cuz fingerprint isn't needed anyways just improves your success rate
         self.client.headers["Origin"] = "https://discord.com/"
         self.client.headers["Authorization"] = token
         self.client.headers["X-Debug-Options"] = "bugReporterEnabled"
@@ -83,11 +80,13 @@ class MultiTool:
             console.s_print(
                 f"{self.token} successfully joined discord.gg/{rawInvite}")
             return True, req
+        console.w_print(f"{self.token} captcha detected. solving thru {self._utility.config.get('captcha').get('api')}")
         captcha_sitekey = req.json()["captcha_sitekey"]
         captcha_rqtoken = req.json()["captcha_rqtoken"]
         captcha_rqdata = req.json()["captcha_rqdata"]
+        captcha_key = await self._captcha.getCaptcha(captcha_sitekey, captcha_rqdata)
         req = await self.client.post(f"https://discord.com/api/v9/invites/{rawInvite}", json={
-            "captcha_key": self._captcha.getCaptcha(captcha_sitekey, captcha_rqdata),
+            "captcha_key": captcha_key,
             "captcha_rqtoken": captcha_rqtoken
         })
         if req.status_code == 200:
@@ -157,7 +156,7 @@ class MultiTool:
         }
         if massMention:
             mentions = "".join(
-                f'<@{random.choice(scrappedMembers)}> ' for i in range(massMentionSize))
+                f'<@{random.choice(scrappedMembers)}> ' for _ in range(massMentionSize))
             payload["content"] = f"{mentions}\n{message}"
         else:
             payload["content"] = message
@@ -174,12 +173,15 @@ class MultiTool:
     async def checkToken(self):
         req = await self.client.get(
             "https://discord.com/api/v9/users/@me/affinities/guilds")
-        if req.status_code == 400 or req.status_code > 400:
-            console.f_print(f"{self.token} is LOCKED")
-            return False
+        if req.status_code == 403:
+            console.f_print(f"{self.token} is [LOCKED]")
+            return False, "LOCKED"
+        elif req.status_code == 401:
+            console.f_print(f"{self.token} is {Fore.RESET}{Fore.YELLOW}[INVALID]{Fore.RESET}")
+            return False, "INVALID"
         else:
-            console.s_print(f"{self.token} is VALID")
-            return True
+            console.s_print(f"{self.token} is [VALID]")
+            return True, "VALID"
 
     async def getGuild(self, guildId: str):
         req = await self.client.get(f"https://discord.com/api/v9//guilds/{guildId}")

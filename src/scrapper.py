@@ -173,9 +173,9 @@ class DiscordSocket(websocket.WebSocketApp):
                 self.close()
 
     def sock_close(self, ws, close_code, close_msg):
-        pass  # print("closed connection", close_code, close_msg)
+        pass 
 
 
-def scrape(token, guild_id, channel_id):
+def scrape(token: str, guild_id: str, channel_id: str):
     sb = DiscordSocket(token, guild_id, channel_id)
     return sb.run()

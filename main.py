@@ -9,100 +9,30 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 """
 print("MultiTool is starting...\nGetting discord buildNumber")
-from tasksio import TaskPool
-from src import MultiTool, MPrint, Utility, scrape, global_variables
-from colorama import Fore, Style
-from typing import Union
-from traceback import format_exc
-from update import lookforupdates
-import os
-import asyncio
-import emoji
-import random
-import threading
+from src import MultiTool, MPrint, Utility, scrape, global_variables, _captcha
 import json
+import threading
+import random
+import emoji
+import asyncio
+import os
+from update import lookforupdates
+from traceback import format_exc
+from typing import Union
+from colorama import Fore, Style
+from tasksio import TaskPool
+# VARIABLES
 console = MPrint()
+goodtokens = []
+seen = {}
+duplicates = 0
+notjoined = 0
+lockedtokens = 0
+invalidTokens = 0
 
-
+# SYNC functions
 def clearConsole(): return os.system(
     'cls' if os.name in ('nt', 'dos') else 'clear')
-
-
-goodtokens = []
-
-
-async def scrapeMassMention(token, guildId, channelId):
-    o = await buildMultiTool(token)
-    res = await o.getGuild(guildId)
-    if "name" not in res:
-        print(f"{token} is not in {guildId}")
-        return await scrapeMassMention(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
-    open("scraped/massmention.txt", "w").write("")
-    console.s_print(f"Scraping in {guildId} with {token}")
-    members = scrape(token, guildId, channelId)
-    for member in members:
-        console.s_print(f"Scraped {member}")
-        open("scraped/massmention.txt", "a").write(member + "\n")
-    console.s_print(f"Total Scrapped: {len(members)}")
-    return True
-async def usernameChanger(token: str, username: str):
-    if ":" not in token:
-        console.f_print(f"{token} is not [Email:Pass:Token]")
-        return None
-    spllited = token.split(":")
-    password = spllited[1]
-    token = spllited[2]
-    m = await buildMultiTool(token)
-    await m.usernameChange(username, password)
-async def bioChanger(token: str, bio: str):
-    m = await buildMultiTool(token)
-    await m.bioChange(bio)
-async def scrapeMembers(token, guildId, channelId):
-    o = await buildMultiTool(token)
-    res = await o.getGuild(guildId)
-    if "name" not in res:
-        print(f"{token} is not in {guildId}")
-        return await scrapeMembers(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
-    open("scraped/massmention.txt", "w").write("")
-    console.s_print(f"Scraping in {guildId} with {token}")
-    members = scrape(token, guildId, channelId)
-    for member in members:
-        console.s_print(f"Scraped {member}")
-        open("scraped/members.txt", "a").write(member + "\n")
-    console.s_print(f"Total Scrapped: {len(members)}")
-    return True
-
-
-async def leave(token: str, guildId: str):
-    o = await buildMultiTool(token)
-    await o.leave(guildId)
-clearConsole()
-print(Fore.BLUE + Style.BRIGHT + """
-██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗     ███╗   ███╗██╗   ██╗██╗     ████████╗██╗████████╗ ██████╗  ██████╗ ██╗     
-██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔══██╗    ████╗ ████║██║   ██║██║     ╚══██╔══╝██║╚══██╔══╝██╔═══██╗██╔═══██╗██║     
-██║  ██║██║███████╗██║     ██║   ██║██████╔╝██║  ██║    ██╔████╔██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
-██║  ██║██║╚════██║██║     ██║   ██║██╔══██╗██║  ██║    ██║╚██╔╝██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
-██████╔╝██║███████║╚██████╗╚██████╔╝██║  ██║██████╔╝    ██║ ╚═╝ ██║╚██████╔╝███████╗   ██║   ██║   ██║   ╚██████╔╝╚██████╔╝███████╗
-╚═════╝ ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝     ╚═╝     ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝
-                                                                                                                        P Y T H O N
-""" + Style.RESET_ALL)
-print(f'{Style.BRIGHT}By Shahzain\n\n')
-if len(open("input/tokens.txt").read().splitlines()) == 0:
-    console.f_print("Input some tokens before restarting...")
-    input("Press Enter To Exit\n")
-    exit()
-
-
-async def buildMultiTool(token: str) -> Union[None, MultiTool]:
-    try:
-        m = MultiTool()
-        await m._init(token)
-        return m
-    except Exception as e:
-        console.f_print(e)
-        return None
-
-
 def showMenu():
     print(f'{Style.BRIGHT}{Fore.BLUE}1: Check Tokens {Style.RESET_ALL}')
     print(f'{Style.BRIGHT}{Fore.BLUE}2: Join Server {Style.RESET_ALL}')
@@ -120,7 +50,76 @@ def showMenu():
         f'{Style.BRIGHT}{Fore.BLUE}10: Friends Spammer {Style.RESET_ALL}')
     print(
         f'{Style.BRIGHT}{Fore.BLUE}11: Exit {Style.RESET_ALL}')
+def changeFormat(token: str):
+    if ":" not in token or len(token.split(":")) == 2:
+        token = token if ":" not in token else token.split(":")[1]
+        console.f_print(
+            f"{token} format is not [Email:Pass:Token]")
+        return token
+    newToken = token.split(":")[2]
+    console.s_print(f"{token} -> {newToken}")
+    return newToken
+def setTitle(tokens: list): return os.system(
+    f'title Discord MultiTool - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahzain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MultiTool | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} | Captcha Balance: $ {_captcha.Captcha().getBalance()} - By Shahzain\007"'
+)
 
+#ASYNC FUNCTIONS
+async def scrapeMassMention(token, guildId, channelId):
+    o = await buildMultiTool(token)
+    res = await o.getGuild(guildId)
+    if "name" not in res:
+        print(f"{token} is not in {guildId}")
+        return await scrapeMassMention(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
+    open("scraped/massmention.txt", "w").write("")
+    console.s_print(f"Scraping in {guildId} with {token}")
+    members = scrape(token, guildId, channelId)
+    for member in members:
+        console.s_print(f"Scraped {member}")
+        open("scraped/massmention.txt", "a").write(member + "\n")
+    console.s_print(f"Total Scrapped: {len(members)}")
+    return True
+
+async def usernameChanger(token: str, username: str):
+    if ":" not in token:
+        console.f_print(f"{token} is not [Email:Pass:Token]")
+        return None
+    spllited = token.split(":")
+    password = spllited[1]
+    token = spllited[2]
+    m = await buildMultiTool(token)
+    await m.usernameChange(username, password)
+
+async def bioChanger(token: str, bio: str):
+    m = await buildMultiTool(token)
+    await m.bioChange(bio)
+
+async def scrapeMembers(token, guildId, channelId):
+    o = await buildMultiTool(token)
+    res = await o.getGuild(guildId)
+    if "name" not in res:
+        print(f"{token} is not in {guildId}")
+        return await scrapeMembers(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
+    open("scraped/massmention.txt", "w").write("")
+    console.s_print(f"Scraping in {guildId} with {token}")
+    members = scrape(token, guildId, channelId)
+    for member in members:
+        console.s_print(f"Scraped {member}")
+        open("scraped/members.txt", "a").write(member + "\n")
+    console.s_print(f"Total Scrapped: {len(members)}")
+    return True
+
+async def leave(token: str, guildId: str):
+    o = await buildMultiTool(token)
+    await o.leave(guildId)
+
+async def buildMultiTool(token: str) -> MultiTool:
+    try:
+        m = MultiTool()
+        await m._init(token)
+        return m
+    except Exception as e:
+        console.f_print(f"Error while building Multitool Coroutine: {e}")
+        return await buildMultiTool(token)
 
 async def sendMessage(token: str, channelId: str, message: str, massMention: bool, massMentionSize: int):
     m = await buildMultiTool(token)
@@ -143,13 +142,15 @@ async def spamMessages(token: str, userId: str, message: str):
             console.s_print(f"{token} successfully sent dm to {userId}")
         else:
             console.f_print(f"{token} failed to send dm to {userId}")
+
 async def sendDm(token: str, userId: str, message: str):
     m = await buildMultiTool(token)
     _, _res = await m.sendDirectMessage(userId, message)
     if 'You are opening direct messages too fast' in _res.text:
         global_variables.qurantined_tokens.append(token)
         console.f_print(f"{token} got ratelimited. sleeping for 10 minutes.")
-        threading.Thread(target=global_variables.removeFromQurantine, args=(token, ))
+        threading.Thread(
+            target=global_variables.removeFromQurantine, args=(token, ))
     elif 'Cannot send messages to this user' in _res.text:
         global_variables.blaclisted_users.append(userId)
     elif 'You need to verify your account in order to perform this action' in _res.text or '401: Unauthorized' in _res.text:
@@ -158,21 +159,34 @@ async def sendDm(token: str, userId: str, message: str):
         console.f_print(f"{token} token got locked during mass dm")
     elif _:
         console.s_print(f"{token} successfully sent dm to {userId}")
+
+
 async def checkToken(token: str):
+    global lockedtokens
+    global invalidTokens
     m = await buildMultiTool(token)
     if m == None:
         return None
-    res = await m.checkToken()
+    res, typee = await m.checkToken()
+    if typee == "LOCKED":
+        lockedtokens += 1
+        return False
+    if typee == "INVALID":
+        invalidTokens += 1
     if res:
         goodtokens.append(token)
         return True
 
 
 async def join(token: str, rawInvite: str, ctx: str, guildId: str, channelId: Union[str, None] = None, messageId: Union[str, None] = None):
+    global notjoined
     m = await buildMultiTool(token)
     if m == None:
         return None
     res, req = await m.join(rawInvite, ctx)
+    if not res:
+        notjoined += 1
+        return res
     if Utility().config["joiner"]["bypassMembershipScreening"] and "show_verification_form" in req.json():
         await m.bypassScreening(guildId, rawInvite)
     if Utility().config["joiner"]["bypassReactionVerification"] and channelId != None:
@@ -187,22 +201,11 @@ async def join(token: str, rawInvite: str, ctx: str, guildId: str, channelId: Un
             emojiOut = emoji.emojize(emojiOut)
         await m.addReaction(messageId, channelId, emojiOut)
     return res
-
-
-def changeFormat(token: str):
-    if ":" not in token or len(token.split(":")) == 2:
-        token = token if ":" not in token else token.split(":")[1]
-        console.f_print(
-            f"{token} format is not [Email:Pass:Token]")
-        return token
-    newToken = token.split(":")[2]
-    console.s_print(f"{token} -> {newToken}")
-    return newToken
-
-def setTitle(tokens: list): return os.system(
-    f'title Discord MassDM - Tokens: {len(tokens)} - Proxies: {len(open("input/proxies.txt").read().splitlines())} - By Shahazain' if os.name == "nt" else f'echo -n -e "\033]0;Discord MassDM | Tokens {len(tokens)} | Proxies {len(open("input/proxies.txt").read().splitlines())} - By Shahzain\007"'
-)
 async def menu():
+    global duplicates
+    global notjoined
+    global lockedtokens
+    global invalidTokens
     try:
         tokens = open("input/tokens.txt").read().splitlines()
         setTitle(tokens)
@@ -215,8 +218,17 @@ async def menu():
             console.s_print(f"Checking tokens...")
             async with TaskPool(10_000) as pool:
                 for token in tokens:
+                    if token in seen:
+                        duplicates += 1
+                        continue
+                    seen[token] = True
                     await pool.put(checkToken(token))
-            console.s_print("All tokens checked.")
+            console.s_print(
+                f"All tokens checked.\nDuplicates: {duplicates} | Valid: {len(goodtokens)} | Invalid: {invalidTokens} | Locked Tokens: {lockedtokens} | Total Bad Tokens(includes locked+invalid tokens): {invalidTokens + lockedtokens}")
+            seen.clear()
+            duplicates = 0
+            lockedtokens = 0
+            invalidTokens = 0
             if Utility().config["removeDeadTokens"]:
                 open("input/tokens.txt", "w").write("")
                 for goodtoken in goodtokens:
@@ -245,9 +257,17 @@ async def menu():
                     f"{Fore.GREEN}{Style.BRIGHT}Reaction Verifier: Enter the messageId of the message the reaction is on: {Style.RESET_ALL}")
             async with TaskPool(10_000) as pool:
                 for token in tokens:
+                    if token in seen:
+                        duplicates += 1
+                        continue
+                    seen[token] = True
                     await pool.put(join(token, rawInvite, ctx, req1["guild"]["id"], channelId, messageId))
                     if useDelay:
                         await asyncio.sleep(deley)
+            console.s_print(
+                f"Tokens successfully joined https://discord.gg/{rawInvite} \nDuplicate Tokens: {duplicates} | Joined Tokens: {len(tokens) - notjoined} | Not Joined: {notjoined}")
+            seen.clear()
+            duplicates = 0
             return await menu()
         if choice == 3:
             console.s_print(f"Server spammer...")
@@ -261,7 +281,7 @@ async def menu():
                 f"{Fore.GREEN}{Style.BRIGHT}Enter the channel Id you want to spam: {Style.RESET_ALL}")
             m = await buildMultiTool(random.choice(tokens))
             guildId = await m.getChannel(channelId)
-            
+
             if massMention and input(f"{Fore.GREEN}{Style.BRIGHT}Do you want to use already scrapped members for massmention? (y/n) {Style.RESET_ALL}").lower() != "y":
                 await scrapeMassMention(random.choice(tokens), guildId, channelId)
             async with TaskPool(10_000) as pool:
@@ -293,7 +313,8 @@ async def menu():
                     await pool.put(spamMessages(token, userId, message))
             return await menu()
         if choice == 7:
-            console.f_print(f"Hey Multitool user. We are sorry but mass dm is currently disabled")
+            console.f_print(
+                f"Hey Multitool user. We are sorry but mass dm is currently disabled")
             return await menu()
             console.s_print(f"Mass DM...")
             members = open("scraped/members.txt").read().splitlines()
@@ -314,7 +335,8 @@ async def menu():
             console.s_print(f"Username changer...")
             usernames = open("input/usernames.txt").read().splitlines()
             if len(usernames) == 0:
-                console.f_print(f"Please input some usernames before using this feature")
+                console.f_print(
+                    f"Please input some usernames before using this feature")
                 input("Press enter to return to menu")
                 return await menu()
             async with TaskPool(10_000) as pool:
@@ -325,7 +347,8 @@ async def menu():
             console.s_print(f"Bio changer...")
             bios = open("input/bios.txt").read().splitlines()
             if len(usernames) == 0:
-                console.f_print(f"Please input some bios before using this feature")
+                console.f_print(
+                    f"Please input some bios before using this feature")
                 input("Press enter to return to menu")
                 return await menu()
             async with TaskPool(10_000) as pool:
@@ -334,7 +357,8 @@ async def menu():
             return await menu()
         if choice == 10:
             console.s_print(f"Friend spammer...")
-            spllited = input(f"{Fore.GREEN}{Style.BRIGHT}Enter your username and tag: {Style.RESET_ALL}").split("#")
+            spllited = input(
+                f"{Fore.GREEN}{Style.BRIGHT}Enter your username and tag: {Style.RESET_ALL}").split("#")
             username = spllited[0]
             discrim = spllited[1]
             async with TaskPool(10_000) as pool:
@@ -351,8 +375,26 @@ async def menu():
             print(format_exc())
         return await menu()
 if __name__ == "__main__":
-    #lookforupdates()
+    
+    clearConsole()
+    print(Fore.BLUE + Style.BRIGHT + """
+██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗     ███╗   ███╗██╗   ██╗██╗     ████████╗██╗████████╗ ██████╗  ██████╗ ██╗     
+██╔══██╗██║██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔══██╗    ████╗ ████║██║   ██║██║     ╚══██╔══╝██║╚══██╔══╝██╔═══██╗██╔═══██╗██║     
+██║  ██║██║███████╗██║     ██║   ██║██████╔╝██║  ██║    ██╔████╔██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
+██║  ██║██║╚════██║██║     ██║   ██║██╔══██╗██║  ██║    ██║╚██╔╝██║██║   ██║██║        ██║   ██║   ██║   ██║   ██║██║   ██║██║     
+██████╔╝██║███████║╚██████╗╚██████╔╝██║  ██║██████╔╝    ██║ ╚═╝ ██║╚██████╔╝███████╗   ██║   ██║   ██║   ╚██████╔╝╚██████╔╝███████╗
+╚═════╝ ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝     ╚═╝     ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝
+                                                                                                                        P Y T H O N
+""" + Style.RESET_ALL)
+    print(f'{Style.BRIGHT}By Shahzain\n\n')
+    if len(open("input/tokens.txt").read().splitlines()) == 0:
+        console.f_print("Input some tokens before restarting...")
+        input("Press Enter To Exit\n")
+        exit()
     console.w_print("Mass DM is disabled")
+    console.w_print(
+        "Before using any feature, please check your tokens, To avoid errors.")
     if Utility().config["proxy"]["proxyless"]:
-        console.w_print("Proxyless is on. Switch to proxies for best performance")
+        console.w_print(
+            "Proxyless is on. Switch to proxies for best performance")
     asyncio.run(menu())

@@ -2,6 +2,7 @@ import random, json, re
 from httpx import Client
 from colorama import Fore, Style
 from base64 import b64encode as b
+import httpx
 class Utility:
     def __init__(self):
         self.config = self.getConfig()
@@ -21,14 +22,11 @@ class Utility:
     def getContextProperties(self, guildId: str, channelId: str) -> str:
         return b(json.dumps({"location":"Join Guild","location_guild_id":guildId,"location_channel_id":channelId,"location_channel_type":0}, separators=(',', ':')).encode()).decode()
     def getInviteInfo(self, rawInvite):
-        with Client() as client:
-            res = client.get(f'https://discord.com/api/v9/invites/{rawInvite}?with_counts=true', headers={
+        res = httpx.get(f'https://discord.com/api/v9/invites/{rawInvite}?with_counts=true', headers={
                              "Authorization": "undefined"}, timeout=30).json()
-            return res
+        return res
 
 class MPrint:
-    def __init__(self):
-        """"""
     def w_print(self, message: str):
         """Print warning"""
         print(f"[{Style.BRIGHT}{Fore.RED}WARN{Style.RESET_ALL}] {Style.BRIGHT}{Fore.YELLOW}{message}{Style.RESET_ALL}")
