@@ -49,7 +49,11 @@ def showMenu():
     print(
         f'{Style.BRIGHT}{Fore.BLUE}10: Friends Spammer {Style.RESET_ALL}')
     print(
-        f'{Style.BRIGHT}{Fore.BLUE}11: Exit {Style.RESET_ALL}')
+        f'{Style.BRIGHT}{Fore.BLUE}11: Member scrapper {Style.RESET_ALL}')
+    print(
+        f'{Style.BRIGHT}{Fore.BLUE}12: VC spammer {Style.RESET_ALL}')
+    print(
+        f'{Style.BRIGHT}{Fore.BLUE}13: Exit {Style.RESET_ALL}')
 def changeFormat(token: str):
     if ":" not in token or len(token.split(":")) == 2:
         token = token if ":" not in token else token.split(":")[1]
@@ -68,7 +72,6 @@ async def scrapeMassMention(token, guildId, channelId):
     o = await buildMultiTool(token)
     res = await o.getGuild(guildId)
     if "name" not in res:
-        print(f"{token} is not in {guildId}")
         return await scrapeMassMention(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
     open("scraped/massmention.txt", "w").write("")
     console.s_print(f"Scraping in {guildId} with {token}")
@@ -78,7 +81,11 @@ async def scrapeMassMention(token, guildId, channelId):
         open("scraped/massmention.txt", "a").write(member + "\n")
     console.s_print(f"Total Scrapped: {len(members)}")
     return True
-
+async def vcSpammer(token: str, guild: str, channelId: str):
+    m = await buildMultiTool(token)
+    while True:
+        await m.vcJoin(channelId, guild)
+        console.s_print(f"Joined vc: {token}")
 async def usernameChanger(token: str, username: str):
     if ":" not in token:
         console.f_print(f"{token} is not [Email:Pass:Token]")
@@ -97,7 +104,6 @@ async def scrapeMembers(token, guildId, channelId):
     o = await buildMultiTool(token)
     res = await o.getGuild(guildId)
     if "name" not in res:
-        print(f"{token} is not in {guildId}")
         return await scrapeMembers(random.choice(open("input/tokens.txt").read().splitlines()), guildId, channelId)
     open("scraped/massmention.txt", "w").write("")
     console.s_print(f"Scraping in {guildId} with {token}")
@@ -239,10 +245,16 @@ async def menu():
             console.s_print(f"Server Joiner...")
             rawInvite = input(f"[>] {Fore.GREEN}{Style.BRIGHT}Enter your invite: {Style.RESET_ALL}").split(
                 "discord.gg/")[1]
-            req1 = Utility().getInviteInfo(rawInvite)
-            if req1 == {"message": "Unknown Invite", "code": 10006}:
+            try:
+              req1 = Utility().getInviteInfo(rawInvite)
+              if req1 == {"message": "Unknown Invite", "code": 10006}:
                 console.f_print(f"https://discord.gg/{rawInvite} is INVALID")
                 return await menu()
+            except:
+                console.f_print("Failed to get invite info, You are probably ratelimited, try using a VPN")
+                req1 = {"guild": { "id": None }, "channel": { "id": None }}
+                if Utility().config.get("proxy")["proxyless"]: # if proxyless is true, redirect back to `menu` otherwise keep joining
+                    return await menu()
             console.s_print(f"https://discord.gg/{rawInvite} is VALID")
             ctx = Utility().getContextProperties(
                 req1["channel"]["id"], req1["guild"]["id"])
@@ -365,17 +377,38 @@ async def menu():
                 for token in tokens:
                     await pool.put(friendRequest(token, username, discrim))
         if choice == 11:
+            console.s_print("Member scrapper...")
+            channelId = input(
+                f"{Fore.GREEN}{Style.BRIGHT}Enter your channelId you want to scrape: {Style.RESET_ALL}")
+            m = await buildMultiTool(random.choice(tokens))
+            guildId = await m.getChannel(channelId)
+            await scrapeMembers(random.choice(tokens), guildId, channelId)
+            return await menu()
+        if choice == 12:
+            console.s_print("VC Spammer...")
+            channelId = input(f"{Fore.GREEN}{Style.BRIGHT}Enter your Voice channelId you want to spam: {Style.RESET_ALL}")
+            m = await buildMultiTool(random.choice(tokens)) # build the multitool coroutine
+            guildId = await m.getChannel(channelId=channelId)
+            async with TaskPool(10_000) as pool:
+                for token in tokens:
+                    if token in seen:
+                        continue
+                    seen[token] = True
+                    await pool.put(vcSpammer(token, guildId, channelId))
+            seen.clear()
+            return await menu()
+        if choice == 13:
             exit()
         else:
             console.f_print("Invalid Choice")
             return await menu()
+        
     except Exception as e:
         console.f_print(e)
         if Utility().config["traceback"]:
             print(format_exc())
         return await menu()
-if __name__ == "__main__":
-    
+if __name__ == "__main__": 
     clearConsole()
     print(Fore.BLUE + Style.BRIGHT + """
 ██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗     ███╗   ███╗██╗   ██╗██╗     ████████╗██╗████████╗ ██████╗  ██████╗ ██╗     
