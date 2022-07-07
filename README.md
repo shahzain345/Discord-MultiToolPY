@@ -72,7 +72,7 @@ MultiTool V2 has less bugs and is faster then v1. More features will be added so
 }
 ```
 ## Need Help?
-Join our guilded server for help: https://www.guilded.gg/i/EAJz3WY2
+Join our guilded server for help: https://www.guilded.gg/i/2Zv9o7L2
 ## How to use?
 Install all the requirements
 <pre><code>pip install -r requirements.txt
