@@ -5,6 +5,10 @@
 # About
 <strong>Discord Multi Tool-PY</strong> is a multi-threaded Discord Self Bot and it is used for many features such as the token joiner and MassDM
 
+# Want to buy tokens? or a token generator that generates unlocked tokens
+
+https://shahzaintokens.sellix.io/
+
 # Whats the difference between multitool v1 and v2?
 
 Well multitool v1 had alot of performance issues and bugs.<br/>
