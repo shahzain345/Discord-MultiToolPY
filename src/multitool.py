@@ -13,6 +13,7 @@ from ._utility import Utility, MPrint
 from ._captcha import Captcha
 from base64 import b64encode as encoder
 from colorama import Fore, Style
+from .discordsocket import DiscordSocket
 import websocket
 import random
 import time
@@ -272,11 +273,3 @@ class MultiTool:
         else:
             console.s_print(f"{self.token} Sent friend request to {username}#{discrim}")
             return req
-    async def vcJoin(self, channelId, guildId):
-        ws = websocket.WebSocket()
-        ws.connect("wss://gateway.discord.gg/?v=8&encoding=json")
-        ws.send(jsonLib.dumps({"op": 2,"d": {"token": self.token,"properties": {"$os": "windows","$browser": "Discord","$device": "desktop"}}}))
-        ws.send(jsonLib.dumps({"op": 4,"d": {"guild_id": guildId,"channel_id": channelId,"self_mute": True,"self_deaf": True, "self_stream?": True, "self_video": False}}))
-        ws.send(jsonLib.dumps({"op": 18,"d": {"type": "guild","guild_id": guildId,"channel_id": channelId,"preferred_region": "singapore"}}))
-        ws.send(jsonLib.dumps({"op": 1,"d": None}))
-        ws.close()

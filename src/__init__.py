@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 from ._utility import Utility, MPrint
 from .multitool import MultiTool
 from .scrapper import scrape
+from .discordsocket import DiscordSocket
 from .global_variables import *
 
 def getVersion():

@@ -9,7 +9,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 """
 print("MultiTool is starting...\nGetting discord buildNumber")
-from src import MultiTool, MPrint, Utility, scrape, global_variables, _captcha
+from src import MultiTool, MPrint, Utility, scrape, global_variables, _captcha, DiscordSocket
 import json
 import threading
 import random
@@ -21,6 +21,7 @@ from traceback import format_exc
 from typing import Union
 from colorama import Fore, Style
 from tasksio import TaskPool
+from multiprocessing.pool import ThreadPool
 # VARIABLES
 console = MPrint()
 goodtokens = []
@@ -81,10 +82,10 @@ async def scrapeMassMention(token, guildId, channelId):
         open("scraped/massmention.txt", "a").write(member + "\n")
     console.s_print(f"Total Scrapped: {len(members)}")
     return True
-async def vcSpammer(token: str, guild: str, channelId: str):
-    m = await buildMultiTool(token)
+def vcSpammer(token: str, guild: str, channelId: str):
     while True:
-        await m.vcJoin(channelId, guild)
+        sock = DiscordSocket(token)
+        sock.run(channelId, guild)
         console.s_print(f"Joined vc: {token}")
 async def usernameChanger(token: str, username: str):
     if ":" not in token:
@@ -389,13 +390,13 @@ async def menu():
             channelId = input(f"{Fore.GREEN}{Style.BRIGHT}Enter your Voice channelId you want to spam: {Style.RESET_ALL}")
             m = await buildMultiTool(random.choice(tokens)) # build the multitool coroutine
             guildId = await m.getChannel(channelId=channelId)
-            async with TaskPool(10_000) as pool:
-                for token in tokens:
-                    if token in seen:
-                        continue
-                    seen[token] = True
-                    await pool.put(vcSpammer(token, guildId, channelId))
-            seen.clear()
+            pool = ThreadPool(10_000)
+            for token in tokens:
+                if token in seen:
+                    continue
+                seen[token] = True
+                pool.apply_async(vcSpammer, (token, guildId, channelId, ))
+            pool.join()
             return await menu()
         if choice == 13:
             exit()
