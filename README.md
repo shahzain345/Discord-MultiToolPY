@@ -1,9 +1,21 @@
-# Discord MultiTool V2
+# Discord MultiTool V2 - Discountinued
 ## By Shahzain
 <li>This project was inspired by DMDGO by Vanshaj https://github.com/V4NSH4J/discord-mass-DM-GO</li>
 
 # About
 <strong>Discord Multi Tool-PY</strong> is a multi-threaded Discord Self Bot and it is used for many features such as the token joiner and MassDM
+
+# Why did this project get discountinued?
+
+Well the main reason is that I don't really have time to work on this project, however if I get time, I would love to fix this project and get it working like it used to be. Some features of this project don't work as they used to work:
+
+<li>The joiner gets captcha all the time even if the tokens are good</li>
+<li>Mass DM is detected</li>
+<li>Documentation is not updated after the initial release of Multitool-V2</li>
+
+All the other features of this tool such as the server spammer still work like before.
+
+If you would like to help me with this project, please create a pull request it would be very appreciated. 
 
 # Want to buy tokens? or a token generator that generates unlocked tokens
 
