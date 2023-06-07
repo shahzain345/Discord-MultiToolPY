@@ -1,11 +1,11 @@
-# Discord MultiTool V2 - Discountinued
+# Discord MultiTool V2 - Discontinued
 ## By Shahzain
 <li>This project was inspired by DMDGO by Vanshaj https://github.com/V4NSH4J/discord-mass-DM-GO</li>
 
 # About
 <strong>Discord Multi Tool-PY</strong> is a multi-threaded Discord Self Bot and it is used for many features such as the token joiner and MassDM
 
-# Why did this project get discountinued?
+# Why did this project get Discontinued?
 
 Well the main reason is that I don't really have time to work on this project, however if I get time, I would love to fix this project and get it working like it used to be. Some features of this project don't work as they used to work:
 
