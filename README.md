@@ -17,9 +17,9 @@ All the other features of this tool such as the server spammer still work like b
 
 If you would like to help me with this project, please create a pull request it would be very appreciated. 
 
-# Want to buy tokens? or a token generator that generates unlocked tokens
+# Want to buy any custoom tool? Join the link below!
 
-https://shahzaintokens.sellix.io/
+https://t.me/shahzaintools
 
 # Whats the difference between multitool v1 and v2?
 
